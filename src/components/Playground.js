@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import BlockLists from "./BlockLists";
-import BlockSettings from "./BlockSettings";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
 import "./Playground.scss";
+import Settings from "./Settings";
 
-const Playground = function ({ onBlockChange = function () {} }) {
+const Playground = function ({
+  onBlockChange = function () {},
+  onCanvasChange = function () {},
+}) {
   const [blocks, setBlocks] = useState([]);
   const [currentBlock, setCurrentBlock] = useState({});
+  const [canvasAttr, setCanvasAttr] = useState({
+    width: 450,
+    height: 350,
+  });
 
   const handleUpdateBlockById = function (id, newBlock = {}) {
     setBlocks(
@@ -77,6 +84,7 @@ const Playground = function ({ onBlockChange = function () {} }) {
 
   useEffect(() => {
     onBlockChange(blocks);
+    onCanvasChange(canvasAttr);
   });
 
   return (
@@ -85,6 +93,7 @@ const Playground = function ({ onBlockChange = function () {} }) {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onMouseDown={handleMouseDown}
+        {...canvasAttr}
       >
         <RenderBlocks
           blocks={blocks}
@@ -98,9 +107,14 @@ const Playground = function ({ onBlockChange = function () {} }) {
       <button onClick={() => setBlocks([])}>ClearBlocks</button>
       <BlockLists />
 
-      <BlockSettings
+      <Settings
         currentBlock={currentBlock}
+        canvasAttr={canvasAttr}
         onUpdateBlock={handleUpdateBlockById}
+        onCurrentBlockChange={useCallback((block) => {
+          setCurrentBlock(block);
+        }, [])}
+        onUpdateCanvas={useCallback((attrs) => setCanvasAttr(attrs), [])}
       />
     </>
   );
