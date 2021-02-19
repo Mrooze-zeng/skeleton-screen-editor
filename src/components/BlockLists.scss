@@ -1,0 +1,14 @@
+.block-common {
+  border: 1px solid transparent;
+  &[isactive="true"] {
+    border-color: #59c7f9;
+    cursor: move;
+  }
+}
+.block-circle {
+  @extend .block-common;
+  border-radius: 50%;
+}
+.block-square {
+  @extend .block-common;
+}
