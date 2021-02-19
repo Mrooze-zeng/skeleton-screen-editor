@@ -11,12 +11,10 @@ function App() {
   });
   return (
     <>
-      <div style={{ display: "flex" }}>
-        <Playground
-          onBlockChange={useCallback((block) => setBlocks(block), [])}
-          onCanvasChange={useCallback((attrs) => setCanvasAttr(attrs), [])}
-        ></Playground>
-      </div>
+      <Playground
+        onBlockChange={useCallback((block) => setBlocks(block), [])}
+        onCanvasChange={useCallback((attrs) => setCanvasAttr(attrs), [])}
+      ></Playground>
 
       <hr />
       <h1>Output:</h1>

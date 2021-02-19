@@ -50,12 +50,18 @@ const RenderResult = function ({ blocks = [], width = 450, height = 350 }) {
   const [styles, code] = generateStyles(blocks, width, height);
   console.log(code);
   return (
-    <div style={{ display: "flex" }}>
-      <Canvas>
+    <>
+      <Canvas width={width} height={height}>
         <div className="result-render" style={styles}></div>
       </Canvas>
-      <textarea value={code} rows={10} cols={20} readOnly></textarea>
-    </div>
+      <textarea
+        value={code}
+        rows={10}
+        cols={20}
+        readOnly
+        style={{ width: "100%" }}
+      ></textarea>
+    </>
   );
 };
 

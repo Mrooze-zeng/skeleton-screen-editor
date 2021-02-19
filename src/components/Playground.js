@@ -104,18 +104,25 @@ const Playground = function ({
           }, [])}
         />
       </Canvas>
-      <button onClick={() => setBlocks([])}>ClearBlocks</button>
-      <BlockLists />
+      <div style={{ display: "flex" }}>
+        <BlockLists />
+        <div>
+          <button onClick={() => setBlocks([])}>ClearBlocks</button>
+        </div>
 
-      <Settings
-        currentBlock={currentBlock}
-        canvasAttr={canvasAttr}
-        onUpdateBlock={handleUpdateBlockById}
-        onCurrentBlockChange={useCallback((block) => {
-          setCurrentBlock(block);
-        }, [])}
-        onUpdateCanvas={useCallback((attrs) => setCanvasAttr(attrs), [])}
-      />
+        <Settings
+          currentBlock={currentBlock}
+          canvasAttr={canvasAttr}
+          onUpdateBlock={handleUpdateBlockById}
+          onCurrentBlockChange={useCallback((block) => {
+            setCurrentBlock(block);
+          }, [])}
+          onUpdateCanvas={useCallback((attrs) => {
+            setCanvasAttr(attrs);
+            console.log(attrs);
+          }, [])}
+        />
+      </div>
     </>
   );
 };

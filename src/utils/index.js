@@ -33,4 +33,13 @@ const drawGrid = function (
   }
 };
 
-export { drawGrid };
+const drawImage = function (canvas, image) {
+  if (!image) {
+    return;
+  }
+  const ctx = canvas.getContext("2d");
+  console.log(image);
+  ctx.drawImage(image, 0, 0);
+};
+
+export { drawGrid, drawImage };
