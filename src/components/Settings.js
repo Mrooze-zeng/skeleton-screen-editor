@@ -174,7 +174,7 @@ const Settings = function ({
   };
 
   const {
-    size: { color },
+    size: { color = "lightgray" },
   } = currentBlock;
   return (
     <Form onSubmit={_handleSubmit}>

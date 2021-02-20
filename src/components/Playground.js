@@ -3,6 +3,7 @@ import BlockLists from "./BlockLists";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
 import "./Playground.scss";
+import { parseCodeToStyle } from "./RenderResult";
 import Settings from "./Settings";
 
 const Playground = function ({
@@ -40,7 +41,6 @@ const Playground = function ({
       style: {
         left: event.clientX - X - canvasRect.x,
         top: event.clientY - Y - canvasRect.y,
-        position: "absolute",
       },
       size,
     };
@@ -54,10 +54,15 @@ const Playground = function ({
   };
 
   const handleMouseDown = function (event, canvasRef) {
-    if (!currentBlock || (currentBlock && !currentBlock.id)) {
-      event.preventDefault();
+    if (
+      !currentBlock ||
+      (currentBlock && !currentBlock.id) ||
+      (currentBlock && event.target.id !== String(currentBlock.id))
+    ) {
       return;
     }
+    event.stopPropagation();
+    event.preventDefault();
     const blockRect = event.target.getBoundingClientRect();
     const canvasRect = canvasRef.current.getBoundingClientRect();
 
@@ -70,7 +75,6 @@ const Playground = function ({
         style: {
           left: e.clientX - minusX - canvasRect.x,
           top: e.clientY - minusY - canvasRect.y,
-          position: "absolute",
         },
       });
     };
@@ -107,7 +111,16 @@ const Playground = function ({
       <div style={{ display: "flex" }}>
         <BlockLists />
         <div>
-          <button onClick={() => setBlocks([])}>ClearBlocks</button>
+          <button onClick={() => setBlocks([])}>清空画板</button>
+          <button
+            onClick={() => {
+              let code = window.prompt("请填入样式代码") || "";
+              code = code.replace(/\r|\n|\s{2}/g, "");
+              code && setBlocks(parseCodeToStyle(code));
+            }}
+          >
+            导入样式代码
+          </button>
         </div>
 
         <Settings

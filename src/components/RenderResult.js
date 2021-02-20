@@ -1,7 +1,54 @@
 import Canvas from "./Canvas";
 import "./RenderResult.scss";
 
-const parseCode = function (images = [], sizes = [], positions = []) {
+const parseCodeToStyle = function (code = "") {
+  const result = [];
+  const blockRegx = new RegExp(
+    /(radial|linear)-gradient\(([^)]*)\)(,\s?\d+(\.*\d*)(px|rem|%)?\s{1}\d+(\.*\d*)(px|rem|%)?){2}/g
+  );
+  const colorReg = new RegExp(/#\S+\d+/gi);
+  const digitReg = new RegExp(
+    /,\s?\d+(\.*\d*)(px|rem|%)?\s{1}\d+(\.*\d*)(px|rem|%)?/g
+  );
+
+  const codeGroup = code.match(blockRegx) || [];
+  const _getType = function (code = "") {
+    if (code.indexOf("radial-gradient") >= 0) {
+      return "circle";
+    } else if (code.indexOf("linear-gradient") >= 0) {
+      return "square";
+    }
+  };
+  const _getSize = function (code) {
+    const [size = "", position = ""] = code.match(digitReg) || [];
+    const [color = ""] = code.match(colorReg) || [];
+    const [width = "", height = ""] = size.replace(",", "").split(" ");
+    const [left = "", top = ""] = position.replace(",", "").split(" ");
+    return [
+      {
+        width: parseFloat(width),
+        height: parseFloat(height),
+        radius: parseFloat(width) / 2,
+        color: color,
+      },
+      { left: parseFloat(left), top: parseFloat(top) },
+    ];
+  };
+  for (let i = 0; i < codeGroup.length; i++) {
+    const [size, style] = _getSize(codeGroup[i]);
+    const type = _getType(codeGroup[i]);
+    const data = {
+      id: i + 1,
+      type,
+      size,
+      style,
+    };
+    result.push(data);
+  }
+  return result;
+};
+
+const _parseStyleToCode = function (images = [], sizes = [], positions = []) {
   let codes = [];
   images.forEach((image, i) => {
     codes.push(`(${image},${sizes[i]},${positions[i]})`);
@@ -9,17 +56,21 @@ const parseCode = function (images = [], sizes = [], positions = []) {
   return codes.length ? `(${codes.join(",")});` : "";
 };
 
-const generateStyles = function (blocks = [], width = 450, height = 350) {
+const _generateStyles = function (blocks = [], width = 450, height = 350) {
   let styles = {};
   let backgroundImages = [];
   let backgroundPositions = [];
   let backgroundSizes = [];
   const imageMap = new Map([
-    ["square", () => `linear-gradient( lightgray 100%, transparent 0 )`],
+    [
+      "square",
+      ({ color = "lightgray" }) =>
+        `linear-gradient( ${color} 100%, transparent 0 )`,
+    ],
     [
       "circle",
-      ({ radius = 50 }) =>
-        `radial-gradient( circle ${radius}px at ${radius}px ${radius}px, lightgray 100%, transparent 0 )`,
+      ({ radius = 50, color = "lightgray" }) =>
+        `radial-gradient( circle ${radius}px at ${radius}px ${radius}px, ${color} 100%, transparent 0 )`,
     ],
   ]);
   const sizeMap = new Map([
@@ -30,11 +81,14 @@ const generateStyles = function (blocks = [], width = 450, height = 350) {
     ],
     ["circle", ({ radius }) => `${radius * 2}px ${radius * 2}px`],
   ]);
-  blocks.forEach((block) => {
+
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    let block = blocks[i];
     backgroundImages.push(imageMap.get(block.type)(block.size));
     backgroundPositions.push(`${block.style.left}px ${block.style.top}px`);
     backgroundSizes.push(sizeMap.get(block.type)(block.size));
-  });
+  }
+
   styles["backgroundImage"] = backgroundImages.join(",");
   styles["backgroundPosition"] = backgroundPositions.join(",");
   styles["backgroundSize"] = backgroundSizes.join(",");
@@ -42,13 +96,12 @@ const generateStyles = function (blocks = [], width = 450, height = 350) {
   styles["height"] = height;
   return [
     styles,
-    parseCode(backgroundImages, backgroundSizes, backgroundPositions),
+    _parseStyleToCode(backgroundImages, backgroundSizes, backgroundPositions),
   ];
 };
 
 const RenderResult = function ({ blocks = [], width = 450, height = 350 }) {
-  const [styles, code] = generateStyles(blocks, width, height);
-  console.log(code);
+  const [styles, code] = _generateStyles(blocks, width, height);
   return (
     <>
       <Canvas width={width} height={height}>
@@ -64,5 +117,7 @@ const RenderResult = function ({ blocks = [], width = 450, height = 350 }) {
     </>
   );
 };
+
+export { parseCodeToStyle };
 
 export default RenderResult;

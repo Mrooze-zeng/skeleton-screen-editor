@@ -8,11 +8,15 @@ class BaseBlockList extends Component {
   }
   _className = "block-square";
   _type = "square";
+  _defaultSize = {
+    width: 100,
+    height: 100,
+    color: "#d3d3d3",
+    radius: 50,
+  };
   _handleDragStart(event) {
     const { x, y } = event.target.getBoundingClientRect();
-    const {
-      size = { width: 100, height: 100, color: "#deb887", radius: 50 },
-    } = this.props;
+    const { size = this._defaultSize } = this.props;
     event.dataTransfer.setData(
       "block",
       JSON.stringify({
@@ -24,11 +28,7 @@ class BaseBlockList extends Component {
     );
   }
   render() {
-    const {
-      children = "",
-      style = {},
-      size = { width: 100, height: 100, color: "#deb887", radius: 50 },
-    } = this.props;
+    const { children = "", style = {}, size = this._defaultSize } = this.props;
     return (
       <div
         className={this._className}

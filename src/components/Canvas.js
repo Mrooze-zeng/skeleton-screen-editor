@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { Children, cloneElement, useEffect, useRef } from "react";
 import { drawGrid, drawImage } from "../utils";
 
 const Canvas = function ({
@@ -15,6 +15,13 @@ const Canvas = function ({
     drawImage(canvasRef.current, image);
     drawGrid(canvasRef.current);
   });
+  const CanvasChildren = function ({ children, canvasRef }) {
+    return Children.map(children, (child) => {
+      return cloneElement(child, {
+        canvas: canvasRef.current,
+      });
+    });
+  };
   return (
     <div className="playground-canvas" style={{ width: width, height: height }}>
       <canvas
@@ -25,7 +32,8 @@ const Canvas = function ({
         ref={canvasRef}
       />
       <div onMouseDown={(event) => onMouseDown(event, canvasRef)}>
-        {children}
+        {/* {children} */}
+        <CanvasChildren children={children} canvasRef={canvasRef} />
       </div>
     </div>
   );

@@ -1,8 +1,42 @@
 .block-common {
-  border: 1px solid transparent;
+  i {
+    &.block-wrapper-top,
+    &.block-wrapper-bottom {
+      height: 1px;
+      width: 100%;
+    }
+    &.block-wrapper-right,
+    &.block-wrapper-left {
+      height: 100%;
+      width: 1px;
+    }
+    &.block-wrapper-left,
+    &.block-wrapper-top,
+    &.block-wrapper-bottom {
+      left: 0;
+    }
+    &.block-wrapper-right {
+      right: 0;
+    }
+    &.block-wrapper-bottom {
+      bottom: 0;
+    }
+    background-color: transparent;
+    position: inherit;
+  }
   &[isactive="true"] {
-    border-color: #59c7f9;
     cursor: move;
+    i {
+      background-color: #59c7f9;
+      &.block-wrapper-left,
+      &.block-wrapper-right {
+        cursor: ew-resize;
+      }
+      &.block-wrapper-top,
+      &.block-wrapper-bottom {
+        cursor: ns-resize;
+      }
+    }
   }
 }
 .block-circle {
