@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { blockCreator } from "../utils";
 import BlockLists from "./BlockLists";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
@@ -7,27 +8,30 @@ import { parseCodeToStyle } from "./RenderResult";
 import Settings from "./Settings";
 
 const Playground = function ({
+  liveRender = false,
+  canvasAttr = {},
   onBlockChange = function () {},
   onCanvasChange = function () {},
 }) {
   const [blocks, setBlocks] = useState([]);
-  const [currentBlock, setCurrentBlock] = useState({});
-  const [canvasAttr, setCanvasAttr] = useState({
-    width: 450,
-    height: 350,
-  });
+  const [currentBlockId, setCurrentBlockId] = useState();
 
-  const handleUpdateBlockById = function (id, newBlock = {}) {
-    setBlocks(
+  const _setBlocksAndListen = function (blocks = []) {
+    setBlocks(blocks);
+    liveRender && onBlockChange(blocks);
+  };
+
+  const _handleUpdateBlockById = function (id, newBlock = {}) {
+    _setBlocksAndListen(
       blocks.map((block) => {
         if (block.id === id) {
-          return newBlock;
+          return { ...block, ...newBlock };
         }
         return block;
       })
     );
   };
-  const handleDrop = function (event) {
+  const _handleDrop = function (event) {
     event.preventDefault();
     event.stopPropagation();
     const { X, Y, type, size } = JSON.parse(
@@ -35,29 +39,26 @@ const Playground = function ({
     );
     const canvasRect = event.target.getBoundingClientRect();
 
-    const block = {
-      id: Date.now(),
-      type: type,
-      style: {
-        left: event.clientX - X - canvasRect.x,
-        top: event.clientY - Y - canvasRect.y,
-      },
-      size,
-    };
-    setBlocks([...blocks, block]);
-    setCurrentBlock(block);
+    const block = blockCreator({
+      type,
+      left: event.clientX - X - canvasRect.x,
+      top: event.clientY - Y - canvasRect.y,
+      ...size,
+    });
+
+    _setBlocksAndListen([...blocks, block]);
+    setCurrentBlockId(block.id);
   };
 
-  const handleDragOver = function (event) {
+  const _handleDragOver = function (event) {
     event.preventDefault();
     event.dataTransfer.dropEffect = "copy";
   };
 
-  const handleMouseDown = function (event, canvasRef) {
+  const _handleMouseDown = function (event, canvasRef) {
     if (
-      !currentBlock ||
-      (currentBlock && !currentBlock.id) ||
-      (currentBlock && event.target.id !== String(currentBlock.id))
+      !currentBlockId ||
+      (currentBlockId && event.target.id !== String(currentBlockId))
     ) {
       return;
     }
@@ -69,53 +70,105 @@ const Playground = function ({
     const minusX = Math.abs(event.clientX - blockRect.x);
     const minusY = Math.abs(event.clientY - blockRect.y);
 
-    const move = (e) => {
-      handleUpdateBlockById(currentBlock.id, {
-        ...currentBlock,
+    const _move = (e) => {
+      _handleUpdateBlockById(currentBlockId, {
         style: {
           left: e.clientX - minusX - canvasRect.x,
           top: e.clientY - minusY - canvasRect.y,
         },
       });
     };
-    const up = (e) => {
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", up);
+    const _up = (e) => {
+      document.removeEventListener("mousemove", _move);
+      document.removeEventListener("mouseup", _up);
     };
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", up);
+    document.addEventListener("mousemove", _move);
+    document.addEventListener("mouseup", _up);
+  };
+
+  const _getCurrentBlock = function (blocks = [], currentBlockId) {
+    return blocks.find((block) => block.id === currentBlockId) || {};
+  };
+
+  //event listeners
+  const _handleDeleteBlock = function (event) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!currentBlockId) {
+      return;
+    }
+    _setBlocksAndListen(blocks.filter((block) => block.id !== currentBlockId));
+    setCurrentBlockId(
+      blocks[blocks.length - 1] && blocks[blocks.length - 1]["id"]
+    );
+  };
+  const _handleCopyBlock = function (event) {
+    event.stopPropagation();
+    event.preventDefault();
+  };
+  const _handlePasteBlock = function (event) {
+    event.stopPropagation();
+    event.preventDefault();
+    const block = _getCurrentBlock(blocks, currentBlockId);
+    if (!block.id) {
+      return;
+    }
+    const newBlock = blockCreator({
+      ...block,
+      id: Date.now(),
+      left: block.style.left + 10,
+      top: block.style.top + 10,
+    });
+    setCurrentBlockId(newBlock.id);
+    _setBlocksAndListen([...blocks, newBlock]);
   };
 
   useEffect(() => {
-    onBlockChange(blocks);
+    document.addEventListener("delete-block", _handleDeleteBlock);
+    document.addEventListener("copy-block", _handleCopyBlock);
+    document.addEventListener("paste-block", _handlePasteBlock);
+    return () => {
+      document.removeEventListener("delete-block", _handleDeleteBlock);
+      document.removeEventListener("copy-block", _handleCopyBlock);
+      document.removeEventListener("paste-block", _handlePasteBlock);
+    };
   });
-  console.log(blocks);
+
   return (
     <>
       <Canvas
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onMouseDown={handleMouseDown}
+        onDrop={_handleDrop}
+        onDragOver={_handleDragOver}
+        onMouseDown={_handleMouseDown}
         {...canvasAttr}
       >
         <RenderBlocks
           blocks={blocks}
-          currentBlock={currentBlock}
-          onUpdateBlock={setBlocks}
-          onCurrentBlockChange={useCallback((block) => {
-            setCurrentBlock(block);
+          currentBlockId={currentBlockId}
+          onUpdateBlock={_setBlocksAndListen}
+          onCurrentBlockChange={useCallback((block = {}) => {
+            block && setCurrentBlockId(block.id);
           }, [])}
         />
       </Canvas>
       <div style={{ display: "flex" }}>
         <BlockLists />
         <div>
-          <button onClick={() => setBlocks([])}>清空画板</button>
+          <button
+            onClick={() => {
+              _setBlocksAndListen([]);
+              setCurrentBlockId();
+            }}
+          >
+            清空画板
+          </button>
+          <button onClick={() => onBlockChange(blocks)}>渲染</button>
+
           <button
             onClick={() => {
               let code = window.prompt("请填入样式代码") || "";
               code = code.replace(/\r|\n|\s{2}/g, "");
-              code && setBlocks(parseCodeToStyle(code));
+              code && _setBlocksAndListen(parseCodeToStyle(code));
             }}
           >
             导入样式代码
@@ -123,16 +176,18 @@ const Playground = function ({
         </div>
 
         <Settings
-          currentBlock={currentBlock}
+          currentBlock={_getCurrentBlock(blocks, currentBlockId)}
           canvasAttr={canvasAttr}
-          onUpdateBlock={handleUpdateBlockById}
-          onCurrentBlockChange={useCallback((block) => {
-            setCurrentBlock(block);
+          onUpdateBlock={_handleUpdateBlockById}
+          onCurrentBlockChange={useCallback((block = {}) => {
+            setCurrentBlockId(block.id);
           }, [])}
-          onUpdateCanvas={useCallback((attrs) => {
-            setCanvasAttr(attrs);
-            onCanvasChange(attrs);
-          }, [])}
+          onUpdateCanvas={useCallback(
+            (attrs) => {
+              onCanvasChange(attrs);
+            },
+            [onCanvasChange]
+          )}
         />
       </div>
     </>

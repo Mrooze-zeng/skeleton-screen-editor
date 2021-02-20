@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useCallback } from "react";
+import { blockCreator } from "../utils/index";
 import { getBlockByType } from "./BlockLists";
 
 const BlockWrapper = function ({
@@ -8,7 +9,6 @@ const BlockWrapper = function ({
   type = "",
   size = {},
   isActive = false,
-  onRemoveBlock = function () {},
   setCurrentBlock = function () {},
 }) {
   const Block = getBlockByType(type);
@@ -21,7 +21,6 @@ const BlockWrapper = function ({
       style={{ ...style, position: "absolute", opacity: 0.9 }}
       size={size}
       isactive={isActive ? isActive.toString() : undefined}
-      onDoubleClick={() => onRemoveBlock(id)}
       onClick={_handleClick}
     >
       {children}
@@ -73,7 +72,7 @@ const BlockActiveLine = function ({
 
 const RenderBlocks = function ({
   blocks = [],
-  currentBlock = {},
+  currentBlockId = "",
   children = "",
   canvas = "",
   onUpdateBlock = function () {},
@@ -81,9 +80,6 @@ const RenderBlocks = function ({
 }) {
   const lines = ["top", "right", "bottom", "left"];
 
-  const _handleRemoveBlock = function (id = "") {
-    onUpdateBlock(blocks.filter((block) => block.id !== id));
-  };
   const _handleUpdateBlock = function (id = "", newBlock = {}) {
     onUpdateBlock(
       blocks.map((block) => {
@@ -94,24 +90,24 @@ const RenderBlocks = function ({
       })
     );
   };
-  const _handleSetCurrentBlock = function (id = "") {
-    onCurrentBlockChange(blocks.filter((block) => block.id === id)[0]);
-  };
+  const _handleSetCurrentBlock = useCallback(
+    function (id = "") {
+      onCurrentBlockChange(blocks.filter((block) => block.id === id)[0]);
+    },
+    [blocks, onCurrentBlockChange]
+  );
+
   const _handleLineMove = function (
     { left = 0, right = 0, top = 0, bottom = 0 },
     position
   ) {
-    const newBlock = {
-      id: currentBlock.id,
-      type: currentBlock.type,
-      size: {
-        color: currentBlock.size.color,
-        width: currentBlock.size.width,
-        height: currentBlock.size.height,
-        radius: currentBlock.size.radius,
-      },
-      style: { left: currentBlock.style.left, top: currentBlock.style.top },
-    };
+    const currentBlock = blocks.find((block) => block.id === currentBlockId);
+    const newBlock = blockCreator({
+      ...currentBlock,
+      ...currentBlock.size,
+      ...currentBlock.style,
+    });
+
     if (currentBlock.type === "square") {
       switch (position) {
         case "top":
@@ -153,16 +149,20 @@ const RenderBlocks = function ({
       newBlock.size.width = newBlock.size.radius * 2;
       newBlock.size.height = newBlock.size.radius * 2;
     }
+    if (
+      newBlock.size.width <= 10 ||
+      newBlock.size.height <= 10 ||
+      newBlock.size.radius <= 10
+    ) {
+      return;
+    }
     _handleUpdateBlock(currentBlock.id, newBlock);
   };
-  useEffect(() => {
-    _handleSetCurrentBlock(currentBlock.id);
-  });
+
   return blocks.map((block, index) => (
     <BlockWrapper
       key={index}
-      isActive={currentBlock.id === block.id}
-      onRemoveBlock={_handleRemoveBlock}
+      isActive={currentBlockId === block.id}
       setCurrentBlock={_handleSetCurrentBlock}
       {...block}
     >
@@ -171,7 +171,7 @@ const RenderBlocks = function ({
           <BlockActiveLine
             key={line}
             position={line}
-            isActive={currentBlock.id === block.id}
+            isActive={currentBlockId === block.id}
             onLineMove={_handleLineMove}
           />
         );

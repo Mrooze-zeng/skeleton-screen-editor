@@ -45,4 +45,49 @@ const serializeWidthAndHeightOnStyle = function (style) {
   return { ...style, width: style.width + "px", height: style.height + "px" };
 };
 
-export { drawGrid, drawImage, serializeWidthAndHeightOnStyle };
+const blockCreator = function ({
+  id = "",
+  type = "",
+  left = 0,
+  top = 0,
+  width = 0,
+  height = 0,
+  color = "",
+  radius = 0,
+}) {
+  return {
+    id: id || Date.now(),
+    type: type,
+    style: {
+      left,
+      top,
+    },
+    size: { width, height, color, radius },
+  };
+};
+
+const listenGlobalKeyDown = function () {
+  const deleteBlock = new Event("delete-block");
+  const copyBlock = new Event("copy-block");
+  const pasteBlock = new Event("paste-block");
+  window.onkeydown = function (event) {
+    if (event.keyCode === 8) {
+      //delete
+      document.dispatchEvent(deleteBlock);
+    } else if (event.keyCode === 67 && event.metaKey) {
+      //copy
+      document.dispatchEvent(copyBlock);
+    } else if (event.keyCode === 86 && event.metaKey) {
+      //paste
+      document.dispatchEvent(pasteBlock);
+    }
+  };
+};
+
+export {
+  drawGrid,
+  drawImage,
+  serializeWidthAndHeightOnStyle,
+  listenGlobalKeyDown,
+  blockCreator,
+};

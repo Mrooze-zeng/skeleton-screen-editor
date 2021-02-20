@@ -129,7 +129,7 @@ const Settings = function ({
     );
   }
   const _handleSubmit = function (event) {
-    onUpdateBlock(currentBlock.id, { ...currentBlock, size: event.data });
+    onUpdateBlock(currentBlock.id, { size: event.data });
     onCurrentBlockChange({ ...currentBlock, size: event.data });
   };
 

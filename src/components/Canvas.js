@@ -14,7 +14,7 @@ const Canvas = function ({
   useEffect(() => {
     drawImage(canvasRef.current, image, width, height);
     drawGrid(canvasRef.current);
-  });
+  }, [height, image, width]);
   const CanvasChildren = function ({ children, canvasRef }) {
     return Children.map(children, (child) => {
       return cloneElement(child, {
@@ -35,7 +35,6 @@ const Canvas = function ({
         ref={canvasRef}
       />
       <div onMouseDown={(event) => onMouseDown(event, canvasRef)}>
-        {/* {children} */}
         <CanvasChildren children={children} canvasRef={canvasRef} />
       </div>
     </div>
