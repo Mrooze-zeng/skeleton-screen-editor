@@ -32,7 +32,6 @@ const BlockWrapper = function ({
 const BlockActiveLine = function ({
   position = "left",
   isActive = false,
-  canvas = "",
   onLineMove = function () {},
 }) {
   const _handleMouseDown = function (event) {
@@ -42,10 +41,6 @@ const BlockActiveLine = function ({
     event.stopPropagation();
     event.preventDefault();
     const lineRect = event.target.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
-
-    const minusX = Math.abs(event.clientX - lineRect.x);
-    const minusY = Math.abs(event.clientY - lineRect.y);
 
     const newPosition = {
       top: 0,
@@ -117,24 +112,46 @@ const RenderBlocks = function ({
       },
       style: { left: currentBlock.style.left, top: currentBlock.style.top },
     };
-    console.log(arguments[0]);
-    switch (position) {
-      case "top":
-        newBlock.size.height = currentBlock.size.height - top;
-        newBlock.style.top = top + currentBlock.style.top;
-        break;
-      case "right":
-        newBlock.size.width = right + currentBlock.size.width;
-        break;
-      case "bottom":
-        newBlock.size.height = bottom + currentBlock.size.height;
-        break;
-      case "left":
-        newBlock.size.width = currentBlock.size.width - left;
-        newBlock.style.left = left + currentBlock.style.left;
-        break;
-      default:
-        break;
+    if (currentBlock.type === "square") {
+      switch (position) {
+        case "top":
+          newBlock.size.height = currentBlock.size.height - top;
+          newBlock.style.top = top + currentBlock.style.top;
+          break;
+        case "right":
+          newBlock.size.width = right + currentBlock.size.width;
+          break;
+        case "bottom":
+          newBlock.size.height = bottom + currentBlock.size.height;
+          break;
+        case "left":
+          newBlock.size.width = currentBlock.size.width - left;
+          newBlock.style.left = left + currentBlock.style.left;
+          break;
+        default:
+          break;
+      }
+    } else if (currentBlock.type === "circle") {
+      switch (position) {
+        case "top":
+          newBlock.size.radius = currentBlock.size.radius - top;
+          newBlock.style.top = top + currentBlock.style.top;
+          break;
+        case "right":
+          newBlock.size.radius = right + currentBlock.size.radius;
+          break;
+        case "bottom":
+          newBlock.size.radius = bottom + currentBlock.size.radius;
+          break;
+        case "left":
+          newBlock.size.radius = currentBlock.size.radius - left;
+          newBlock.style.left = left + currentBlock.style.left;
+          break;
+        default:
+          break;
+      }
+      newBlock.size.width = newBlock.size.radius * 2;
+      newBlock.size.height = newBlock.size.radius * 2;
     }
     _handleUpdateBlock(currentBlock.id, newBlock);
   };
@@ -153,7 +170,6 @@ const RenderBlocks = function ({
         return (
           <BlockActiveLine
             key={line}
-            canvas={canvas}
             position={line}
             isActive={currentBlock.id === block.id}
             onLineMove={_handleLineMove}

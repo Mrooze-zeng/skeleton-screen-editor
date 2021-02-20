@@ -29,6 +29,7 @@ class BaseBlockList extends Component {
   }
   render() {
     const { children = "", style = {}, size = this._defaultSize } = this.props;
+    console.log(this.props);
     return (
       <div
         className={this._className}
