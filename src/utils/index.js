@@ -33,13 +33,16 @@ const drawGrid = function (
   }
 };
 
-const drawImage = function (canvas, image) {
+const drawImage = function (canvas, image, width, height) {
   if (!image) {
     return;
   }
   const ctx = canvas.getContext("2d");
-  console.log(image);
-  ctx.drawImage(image, 0, 0);
+  ctx.drawImage(image, 0, 0, width, height);
 };
 
-export { drawGrid, drawImage };
+const serializeWidthAndHeightOnStyle = function (style) {
+  return { ...style, width: style.width + "px", height: style.height + "px" };
+};
+
+export { drawGrid, drawImage, serializeWidthAndHeightOnStyle };

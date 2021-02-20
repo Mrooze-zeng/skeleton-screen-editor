@@ -89,6 +89,7 @@ const Playground = function ({
   useEffect(() => {
     onBlockChange(blocks);
   });
+  console.log(blocks);
   return (
     <>
       <Canvas
@@ -130,7 +131,7 @@ const Playground = function ({
           }, [])}
           onUpdateCanvas={useCallback((attrs) => {
             setCanvasAttr(attrs);
-            onCanvasChange(canvasAttr);
+            onCanvasChange(attrs);
           }, [])}
         />
       </div>

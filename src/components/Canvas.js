@@ -1,5 +1,5 @@
 import { Children, cloneElement, useEffect, useRef } from "react";
-import { drawGrid, drawImage } from "../utils";
+import { drawGrid, drawImage, serializeWidthAndHeightOnStyle } from "../utils";
 
 const Canvas = function ({
   children,
@@ -12,7 +12,7 @@ const Canvas = function ({
 }) {
   const canvasRef = useRef();
   useEffect(() => {
-    drawImage(canvasRef.current, image);
+    drawImage(canvasRef.current, image, width, height);
     drawGrid(canvasRef.current);
   });
   const CanvasChildren = function ({ children, canvasRef }) {
@@ -23,7 +23,10 @@ const Canvas = function ({
     });
   };
   return (
-    <div className="playground-canvas" style={{ width: width, height: height }}>
+    <div
+      className="playground-canvas"
+      style={serializeWidthAndHeightOnStyle({ width: width, height: height })}
+    >
       <canvas
         width={width}
         height={height}

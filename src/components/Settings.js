@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Form from "../Form";
 
 const RenderInput = function ({ type = "square" }) {
@@ -46,33 +45,62 @@ const RenderInput = function ({ type = "square" }) {
     ],
   ]);
   const Inputs = typeInputMap.get(type);
-  return <Inputs {...arguments} />;
+  const block = arguments[0] || {};
+  return <Inputs {...block.size} />;
 };
 
-const SetCanvasAccordingToImage = function ({
+const SetCanvasAccordingToWidthHeight = function ({
   height = 350,
   width = 450,
   onUpdateCanvas = function () {},
 }) {
-  const _handleSubmit = function (event) {
-    const reader = new FileReader();
-    const image = new Image();
-
-    image.onload = function () {
-      const data = {
-        width: image.width,
-        height: image.height,
-        image: image,
+  const _readImage = function (file) {
+    return new Promise((resolve, reject) => {
+      if (!file.name) {
+        return reject();
+      }
+      const reader = new FileReader();
+      reader.onload = function () {
+        const image = new Image();
+        image.onload = function () {
+          resolve(image);
+        };
+        image.src = this.result;
       };
-      onUpdateCanvas(data);
-    };
-    reader.onload = function () {
-      image.src = this.result;
-    };
-    reader.readAsDataURL(event.data.file);
+      reader.readAsDataURL(file);
+    });
+  };
+  const _handleSubmit = async function (event) {
+    try {
+      const image = await _readImage(event.data.file);
+      onUpdateCanvas({ ...event.data, image });
+    } catch (e) {
+      onUpdateCanvas({ ...event.data });
+    }
   };
   return (
     <Form onSubmit={_handleSubmit}>
+      <div>
+        <label htmlFor="">画布宽度:</label>
+        <input
+          type="text"
+          id="width"
+          name="width"
+          defaultValue={parseFloat(width)}
+          placeholder="请输入画布宽度"
+        />
+      </div>
+      <div>
+        <label htmlFor="">画布高度:</label>
+        <input
+          type="text"
+          id="height"
+          name="height"
+          defaultValue={parseFloat(height)}
+          placeholder="请输入画布高度"
+        />
+      </div>
+
       <div>
         <label htmlFor="image">上传图片:</label>
         <input type="file" accept="image/*" name="file" />
@@ -85,79 +113,6 @@ const SetCanvasAccordingToImage = function ({
   );
 };
 
-const SetCanvasAccordingToWidthHeight = function ({
-  height = 350,
-  width = 450,
-  onUpdateCanvas = function () {},
-}) {
-  const _handleSubmit = function (event) {
-    onUpdateCanvas(event.data);
-  };
-  return (
-    <Form onSubmit={_handleSubmit}>
-      <div>
-        <label htmlFor="">画布高度:</label>
-        <input
-          type="text"
-          id="height"
-          name="height"
-          defaultValue={parseFloat(height)}
-          placeholder="请输入画布高度"
-        />
-      </div>
-      <div>
-        <label htmlFor="">画布宽度:</label>
-        <input
-          type="text"
-          id="width"
-          name="width"
-          defaultValue={parseFloat(width)}
-          placeholder="请输入画布宽度"
-        />
-      </div>
-      <div>
-        <button type="submit">提交</button>
-        <button type="reset">重置</button>
-      </div>
-    </Form>
-  );
-};
-
-const CanvasSettings = function (props = {}) {
-  const [type, setType] = useState("");
-  const _handleSelect = function (event) {
-    setType(event.target.value);
-  };
-  const SettingForm = function (props = {}) {
-    const typeMap = new Map([
-      ["image", (props) => <SetCanvasAccordingToImage {...props} />],
-      ["wh", (props) => <SetCanvasAccordingToWidthHeight {...props} />],
-    ]);
-    const MForm = typeMap.get(props.type);
-    if (!MForm) {
-      return "";
-    }
-    return <MForm {...props} />;
-  };
-  return (
-    <>
-      <p>设置画布属性</p>
-      <select
-        name="type"
-        id="type"
-        onChange={_handleSelect}
-        placeholder="选择设置画布的方式"
-        style={{ width: 100, height: 25 }}
-      >
-        <option value="">选择设置画布的方式</option>
-        <option value="image">图片</option>
-        <option value="wh">宽高</option>
-      </select>
-      <SettingForm type={type} {...props} />
-    </>
-  );
-};
-
 const Settings = function ({
   currentBlock = {},
   canvasAttr = {},
@@ -166,7 +121,12 @@ const Settings = function ({
   onUpdateCanvas = function () {},
 }) {
   if (!currentBlock.id) {
-    return <CanvasSettings {...canvasAttr} onUpdateCanvas={onUpdateCanvas} />;
+    return (
+      <SetCanvasAccordingToWidthHeight
+        {...canvasAttr}
+        onUpdateCanvas={onUpdateCanvas}
+      />
+    );
   }
   const _handleSubmit = function (event) {
     onUpdateBlock(currentBlock.id, { ...currentBlock, size: event.data });

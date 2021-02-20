@@ -18,7 +18,7 @@ const BlockWrapper = function ({
   return (
     <Block
       id={id}
-      style={{ ...style, position: "absolute" }}
+      style={{ ...style, position: "absolute", opacity: 0.9 }}
       size={size}
       isactive={isActive ? isActive.toString() : undefined}
       onDoubleClick={() => onRemoveBlock(id)}

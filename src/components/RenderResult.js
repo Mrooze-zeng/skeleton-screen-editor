@@ -1,3 +1,4 @@
+import { serializeWidthAndHeightOnStyle } from "../utils/index";
 import Canvas from "./Canvas";
 import "./RenderResult.scss";
 
@@ -95,7 +96,7 @@ const _generateStyles = function (blocks = [], width = 450, height = 350) {
   styles["width"] = width;
   styles["height"] = height;
   return [
-    styles,
+    serializeWidthAndHeightOnStyle(styles),
     _parseStyleToCode(backgroundImages, backgroundSizes, backgroundPositions),
   ];
 };
