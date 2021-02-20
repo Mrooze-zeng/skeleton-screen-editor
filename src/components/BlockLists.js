@@ -31,6 +31,7 @@ class BaseBlockList extends Component {
     const { children = "", style = {}, size = this._defaultSize } = this.props;
     return (
       <div
+        type="block"
         className={this._className}
         onDragStart={this._handleDragStart}
         {...this.props}

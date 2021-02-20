@@ -54,9 +54,11 @@ const blockCreator = function ({
   height = 0,
   color = "",
   radius = 0,
+  isActive = false,
 }) {
   return {
     id: id || Date.now(),
+    isActive,
     type: type,
     style: {
       left,
@@ -66,21 +68,18 @@ const blockCreator = function ({
   };
 };
 
-const listenGlobalKeyDown = function () {
-  const deleteBlock = new Event("delete-block");
-  const copyBlock = new Event("copy-block");
-  const pasteBlock = new Event("paste-block");
-  window.onkeydown = function (event) {
-    if (event.keyCode === 8) {
-      //delete
-      document.dispatchEvent(deleteBlock);
-    } else if (event.keyCode === 67 && event.metaKey) {
-      //copy
-      document.dispatchEvent(copyBlock);
-    } else if (event.keyCode === 86 && event.metaKey) {
-      //paste
-      document.dispatchEvent(pasteBlock);
+const throttle = function (delay = 10) {
+  let _timer = null;
+  return function (fn) {
+    if (_timer) {
+      clearTimeout(_timer);
+      _timer = null;
+      return;
     }
+    _timer = setTimeout(function () {
+      fn();
+      _timer = null;
+    }, delay);
   };
 };
 
@@ -88,6 +87,6 @@ export {
   drawGrid,
   drawImage,
   serializeWidthAndHeightOnStyle,
-  listenGlobalKeyDown,
   blockCreator,
+  throttle,
 };

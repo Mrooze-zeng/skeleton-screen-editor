@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useEffect } from "react";
 import { blockCreator } from "../utils/index";
 import { getBlockByType } from "./BlockLists";
 
@@ -10,16 +10,53 @@ const BlockWrapper = function ({
   size = {},
   isActive = false,
   setCurrentBlock = function () {},
+  removeBlock = function () {},
+  addBlock = function () {},
 }) {
   const Block = getBlockByType(type);
   const _handleClick = function (event) {
-    setCurrentBlock(!isActive && id);
+    event.preventDefault();
+    event.stopPropagation();
+    setCurrentBlock(id);
   };
+  const _handleKeyDown = function (event) {
+    if (!isActive || event.target.getAttribute("type") !== "block") {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.keyCode === 8) {
+      //delete
+      removeBlock(id);
+    } else if (event.keyCode === 67 && event.metaKey) {
+      //copy
+      console.log("copy");
+    } else if (event.keyCode === 86 && event.metaKey) {
+      //paste
+      const newBlock = blockCreator({
+        type,
+        isActive: true,
+        id: Date.now(),
+        left: style.left + 10,
+        top: style.top + 10,
+        ...size,
+      });
+      addBlock(newBlock, newBlock.id);
+    }
+  };
+  useEffect(() => {
+    isActive && window.addEventListener("keydown", _handleKeyDown, false);
+    isActive && document.getElementById(id).focus();
+    return () => {
+      isActive && window.removeEventListener("keydown", _handleKeyDown, false);
+    };
+  });
   return (
     <Block
       id={id}
       style={{ ...style, position: "absolute", opacity: 0.9 }}
       size={size}
+      tabIndex={isActive ? 1 : -1}
       isactive={isActive ? isActive.toString() : undefined}
       onClick={_handleClick}
     >
@@ -72,11 +109,9 @@ const BlockActiveLine = function ({
 
 const RenderBlocks = function ({
   blocks = [],
-  currentBlockId = "",
   children = "",
   canvas = "",
   onUpdateBlock = function () {},
-  onCurrentBlockChange = function () {},
 }) {
   const lines = ["top", "right", "bottom", "left"];
 
@@ -84,24 +119,25 @@ const RenderBlocks = function ({
     onUpdateBlock(
       blocks.map((block) => {
         if (block.id === id) {
-          return newBlock;
+          return { ...block, ...newBlock };
         }
         return block;
-      })
+      }),
+      id
     );
   };
-  const _handleSetCurrentBlock = useCallback(
-    function (id = "") {
-      onCurrentBlockChange(blocks.filter((block) => block.id === id)[0]);
-    },
-    [blocks, onCurrentBlockChange]
-  );
+  const _handleRemoveBlock = function (id = "") {
+    onUpdateBlock(blocks.filter((block) => block.id !== id));
+  };
+  const _handleAddBlock = function (block = {}) {
+    onUpdateBlock([...blocks, block], block.id);
+  };
 
   const _handleLineMove = function (
     { left = 0, right = 0, top = 0, bottom = 0 },
     position
   ) {
-    const currentBlock = blocks.find((block) => block.id === currentBlockId);
+    const currentBlock = blocks.find((block) => block.isActive);
     const newBlock = blockCreator({
       ...currentBlock,
       ...currentBlock.size,
@@ -150,9 +186,9 @@ const RenderBlocks = function ({
       newBlock.size.height = newBlock.size.radius * 2;
     }
     if (
-      newBlock.size.width <= 10 ||
-      newBlock.size.height <= 10 ||
-      newBlock.size.radius <= 10
+      (newBlock.size.width <= 10 && newBlock.size.width > 0) ||
+      (newBlock.size.height <= 10 && newBlock.size.height > 0) ||
+      (newBlock.size.radius <= 10 && newBlock.size.radius > 0)
     ) {
       return;
     }
@@ -162,8 +198,10 @@ const RenderBlocks = function ({
   return blocks.map((block, index) => (
     <BlockWrapper
       key={index}
-      isActive={currentBlockId === block.id}
-      setCurrentBlock={_handleSetCurrentBlock}
+      isActive={block.isActive}
+      addBlock={_handleAddBlock}
+      setCurrentBlock={_handleUpdateBlock}
+      removeBlock={_handleRemoveBlock}
       {...block}
     >
       {lines.map((line) => {
@@ -171,7 +209,7 @@ const RenderBlocks = function ({
           <BlockActiveLine
             key={line}
             position={line}
-            isActive={currentBlockId === block.id}
+            isActive={block.isActive}
             onLineMove={_handleLineMove}
           />
         );

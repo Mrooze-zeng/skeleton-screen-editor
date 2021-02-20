@@ -10,7 +10,7 @@ const RenderInput = function ({ type = "square" }) {
             <label htmlFor="height">高度:</label>
             <input
               id="height"
-              type="text"
+              type="number"
               name="height"
               defaultValue={parseFloat(height)}
               placeholder="请输入高度"
@@ -19,7 +19,7 @@ const RenderInput = function ({ type = "square" }) {
           <div>
             <label htmlFor="">宽度:</label>
             <input
-              type="text"
+              type="number"
               id="width"
               name="width"
               defaultValue={parseFloat(width)}
@@ -35,7 +35,7 @@ const RenderInput = function ({ type = "square" }) {
         <div>
           <label htmlFor="radius">半径:</label>
           <input
-            type="text"
+            type="number"
             id="radius"
             name="radius"
             defaultValue={parseFloat(radius)}
@@ -83,7 +83,7 @@ const SetCanvasAccordingToWidthHeight = function ({
       <div>
         <label htmlFor="">画布宽度:</label>
         <input
-          type="text"
+          type="number"
           id="width"
           name="width"
           defaultValue={parseFloat(width)}
@@ -93,7 +93,7 @@ const SetCanvasAccordingToWidthHeight = function ({
       <div>
         <label htmlFor="">画布高度:</label>
         <input
-          type="text"
+          type="number"
           id="height"
           name="height"
           defaultValue={parseFloat(height)}
@@ -114,12 +114,12 @@ const SetCanvasAccordingToWidthHeight = function ({
 };
 
 const Settings = function ({
-  currentBlock = {},
+  blocks = [],
   canvasAttr = {},
   onUpdateBlock = function () {},
-  onCurrentBlockChange = function () {},
   onUpdateCanvas = function () {},
 }) {
+  const currentBlock = blocks.find((block) => block.isActive) || {};
   if (!currentBlock.id) {
     return (
       <SetCanvasAccordingToWidthHeight
@@ -129,19 +129,58 @@ const Settings = function ({
     );
   }
   const _handleSubmit = function (event) {
-    onUpdateBlock(currentBlock.id, { size: event.data });
-    onCurrentBlockChange({ ...currentBlock, size: event.data });
+    const {
+      color = "",
+      width = 0,
+      height = 0,
+      left = 0,
+      top = 0,
+      radius = 0,
+    } = event.data;
+    onUpdateBlock(currentBlock.id, {
+      size: {
+        color,
+        width: parseFloat(width),
+        height: parseFloat(height),
+        radius: parseFloat(radius),
+      },
+      style: { left: parseFloat(left), top: parseFloat(top) },
+    });
   };
 
-  const {
-    size: { color = "lightgray" },
-  } = currentBlock;
   return (
     <Form onSubmit={_handleSubmit}>
       <RenderInput {...currentBlock} />
       <div>
-        <label htmlFor="">颜色:</label>
-        <input type="color" defaultValue={color} name="color" />
+        <label htmlFor="color">颜色:</label>
+        <input
+          key={currentBlock.size.color}
+          type="color"
+          defaultValue={currentBlock.size.color}
+          name="color"
+          id="color"
+        />
+      </div>
+      <p>微调</p>
+      <div>
+        <label htmlFor="left">X:</label>
+        <input
+          key={currentBlock.style.left}
+          type="number"
+          defaultValue={parseFloat(currentBlock.style.left)}
+          name="left"
+          id="left"
+        />
+      </div>
+      <div>
+        <label htmlFor="top">Y:</label>
+        <input
+          key={currentBlock.style.top}
+          type="number"
+          defaultValue={parseFloat(currentBlock.style.top)}
+          name="top"
+          id="top"
+        />
       </div>
       <div>
         <button type="submit">提交</button>

@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
-import { blockCreator } from "../utils";
+import { useCallback, useState } from "react";
+import { blockCreator, throttle } from "../utils";
 import BlockLists from "./BlockLists";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
 import "./Playground.scss";
 import { parseCodeToStyle } from "./RenderResult";
 import Settings from "./Settings";
+
+const _blockChangeThrottle = throttle();
 
 const Playground = function ({
   liveRender = false,
@@ -14,11 +16,22 @@ const Playground = function ({
   onCanvasChange = function () {},
 }) {
   const [blocks, setBlocks] = useState([]);
-  const [currentBlockId, setCurrentBlockId] = useState();
 
-  const _setBlocksAndListen = function (blocks = []) {
+  const _setBlocksAndListen = function (blocks = [], id = "") {
+    blocks = blocks.map((block) => {
+      if (block.isActive) {
+        block.isActive = false;
+      }
+      if (block.id === id) {
+        block.isActive = true;
+      }
+      return block;
+    });
     setBlocks(blocks);
-    liveRender && onBlockChange(blocks);
+    liveRender &&
+      _blockChangeThrottle(function () {
+        onBlockChange(blocks);
+      });
   };
 
   const _handleUpdateBlockById = function (id, newBlock = {}) {
@@ -28,7 +41,8 @@ const Playground = function ({
           return { ...block, ...newBlock };
         }
         return block;
-      })
+      }),
+      id
     );
   };
   const _handleDrop = function (event) {
@@ -41,13 +55,12 @@ const Playground = function ({
 
     const block = blockCreator({
       type,
+      isActive: true,
       left: event.clientX - X - canvasRect.x,
       top: event.clientY - Y - canvasRect.y,
       ...size,
     });
-
-    _setBlocksAndListen([...blocks, block]);
-    setCurrentBlockId(block.id);
+    _setBlocksAndListen([...blocks, block], block.id);
   };
 
   const _handleDragOver = function (event) {
@@ -56,14 +69,16 @@ const Playground = function ({
   };
 
   const _handleMouseDown = function (event, canvasRef) {
+    event.stopPropagation();
+    event.preventDefault();
+    const currentBlock = _getCurrentBlock(blocks);
     if (
-      !currentBlockId ||
-      (currentBlockId && event.target.id !== String(currentBlockId))
+      !currentBlock.id ||
+      (currentBlock.id && event.target.id !== String(currentBlock.id))
     ) {
       return;
     }
-    event.stopPropagation();
-    event.preventDefault();
+
     const blockRect = event.target.getBoundingClientRect();
     const canvasRect = canvasRef.current.getBoundingClientRect();
 
@@ -71,7 +86,7 @@ const Playground = function ({
     const minusY = Math.abs(event.clientY - blockRect.y);
 
     const _move = (e) => {
-      _handleUpdateBlockById(currentBlockId, {
+      _handleUpdateBlockById(currentBlock.id, {
         style: {
           left: e.clientX - minusX - canvasRect.x,
           top: e.clientY - minusY - canvasRect.y,
@@ -86,53 +101,11 @@ const Playground = function ({
     document.addEventListener("mouseup", _up);
   };
 
-  const _getCurrentBlock = function (blocks = [], currentBlockId) {
-    return blocks.find((block) => block.id === currentBlockId) || {};
+  const _getCurrentBlock = function (blocks = []) {
+    return blocks.find((block) => block.isActive) || {};
   };
 
-  //event listeners
-  const _handleDeleteBlock = function (event) {
-    event.stopPropagation();
-    event.preventDefault();
-    if (!currentBlockId) {
-      return;
-    }
-    _setBlocksAndListen(blocks.filter((block) => block.id !== currentBlockId));
-    setCurrentBlockId(
-      blocks[blocks.length - 1] && blocks[blocks.length - 1]["id"]
-    );
-  };
-  const _handleCopyBlock = function (event) {
-    event.stopPropagation();
-    event.preventDefault();
-  };
-  const _handlePasteBlock = function (event) {
-    event.stopPropagation();
-    event.preventDefault();
-    const block = _getCurrentBlock(blocks, currentBlockId);
-    if (!block.id) {
-      return;
-    }
-    const newBlock = blockCreator({
-      ...block,
-      id: Date.now(),
-      left: block.style.left + 10,
-      top: block.style.top + 10,
-    });
-    setCurrentBlockId(newBlock.id);
-    _setBlocksAndListen([...blocks, newBlock]);
-  };
-
-  useEffect(() => {
-    document.addEventListener("delete-block", _handleDeleteBlock);
-    document.addEventListener("copy-block", _handleCopyBlock);
-    document.addEventListener("paste-block", _handlePasteBlock);
-    return () => {
-      document.removeEventListener("delete-block", _handleDeleteBlock);
-      document.removeEventListener("copy-block", _handleCopyBlock);
-      document.removeEventListener("paste-block", _handlePasteBlock);
-    };
-  });
+  console.log("blocks:", blocks);
 
   return (
     <>
@@ -142,14 +115,7 @@ const Playground = function ({
         onMouseDown={_handleMouseDown}
         {...canvasAttr}
       >
-        <RenderBlocks
-          blocks={blocks}
-          currentBlockId={currentBlockId}
-          onUpdateBlock={_setBlocksAndListen}
-          onCurrentBlockChange={useCallback((block = {}) => {
-            block && setCurrentBlockId(block.id);
-          }, [])}
-        />
+        <RenderBlocks blocks={blocks} onUpdateBlock={_setBlocksAndListen} />
       </Canvas>
       <div style={{ display: "flex" }}>
         <BlockLists />
@@ -157,7 +123,6 @@ const Playground = function ({
           <button
             onClick={() => {
               _setBlocksAndListen([]);
-              setCurrentBlockId();
             }}
           >
             清空画板
@@ -176,12 +141,9 @@ const Playground = function ({
         </div>
 
         <Settings
-          currentBlock={_getCurrentBlock(blocks, currentBlockId)}
+          blocks={blocks}
           canvasAttr={canvasAttr}
           onUpdateBlock={_handleUpdateBlockById}
-          onCurrentBlockChange={useCallback((block = {}) => {
-            setCurrentBlockId(block.id);
-          }, [])}
           onUpdateCanvas={useCallback(
             (attrs) => {
               onCanvasChange(attrs);

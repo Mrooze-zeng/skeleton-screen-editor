@@ -2,9 +2,6 @@ import { useCallback, useState } from "react";
 import "./App.scss";
 import Playground from "./components/Playground";
 import RenderResult from "./components/RenderResult";
-import { listenGlobalKeyDown } from "./utils";
-
-listenGlobalKeyDown();
 
 function App() {
   const [blocks, setBlocks] = useState([]);
