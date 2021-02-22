@@ -1,4 +1,4 @@
-import Form from "../Form";
+import Form from "./Form";
 
 const RenderInput = function ({ type = "square" }) {
   const typeInputMap = new Map([

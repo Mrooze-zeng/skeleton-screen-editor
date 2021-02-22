@@ -68,18 +68,19 @@ const blockCreator = function ({
   };
 };
 
-const throttle = function (delay = 10) {
-  let _timer = null;
-  return function (fn) {
-    if (_timer) {
-      clearTimeout(_timer);
-      _timer = null;
+const throttle = function (delay = 100) {
+  let _timers = [];
+  return function (fn, argus) {
+    if (_timers.length > 1) {
+      clearTimeout(_timers[0]);
+      _timers.shift();
       return;
     }
-    _timer = setTimeout(function () {
-      fn();
-      _timer = null;
-    }, delay);
+    _timers.push(
+      setTimeout(function () {
+        fn(argus);
+      }, delay)
+    );
   };
 };
 

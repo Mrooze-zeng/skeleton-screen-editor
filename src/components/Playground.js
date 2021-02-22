@@ -29,9 +29,9 @@ const Playground = function ({
     });
     setBlocks(blocks);
     liveRender &&
-      _blockChangeThrottle(function () {
-        onBlockChange(blocks);
-      });
+      _blockChangeThrottle(function (data) {
+        onBlockChange(data);
+      }, blocks);
   };
 
   const _handleUpdateBlockById = function (id, newBlock = {}) {
@@ -102,18 +102,6 @@ const Playground = function ({
     const _move = (e) => {
       let x = e.clientX - minusX - canvasRect.x;
       let y = e.clientY - minusY - canvasRect.y;
-      const block = {
-        top: y,
-        right: x + blockRect.width,
-        bottom: y + blockRect.height,
-        left: x,
-        boundary: {
-          top: 0,
-          right: canvasRect.width,
-          bottom: canvasRect.height,
-          left: 0,
-        },
-      };
 
       if (_calculateBoundary({ x, y, blockRect, canvasRect })) {
         return;
@@ -137,7 +125,7 @@ const Playground = function ({
     return blocks.find((block) => block.isActive) || {};
   };
 
-  //   console.log("blocks:", blocks);
+  console.log("blocks:", blocks);
 
   return (
     <>

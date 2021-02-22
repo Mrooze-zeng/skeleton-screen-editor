@@ -198,7 +198,10 @@ const RenderBlocks = function ({
       newBlock.size.width <= 10 ||
       newBlock.size.height <= 10 ||
       newBlock.style.left + newBlock.size.width > canvas.width ||
-      newBlock.style.top + newBlock.size.height > canvas.height
+      newBlock.style.top + newBlock.size.height > canvas.height ||
+      //限定圆不能出画布边界
+      newBlock.style.left < 0 ||
+      newBlock.style.top < 0
     ) {
       return;
     }
