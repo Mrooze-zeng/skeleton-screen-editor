@@ -7,7 +7,7 @@ const parseCodeToStyle = function (code = "") {
   const blockRegx = new RegExp(
     /(radial|linear)-gradient\(([^)]*)\)(,\s?\d+(\.*\d*)(px|rem|%)?\s{1}\d+(\.*\d*)(px|rem|%)?){2}/g
   );
-  const colorReg = new RegExp(/#\S+\d+/gi);
+  const colorReg = new RegExp(/#\S+\d{0}/gi);
   const digitReg = new RegExp(
     /,\s?\d+(\.*\d*)(px|rem|%)?\s{1}\d+(\.*\d*)(px|rem|%)?/g
   );
@@ -23,8 +23,8 @@ const parseCodeToStyle = function (code = "") {
   const _getSize = function (code) {
     const [size = "", position = ""] = code.match(digitReg) || [];
     const [color = ""] = code.match(colorReg) || [];
-    const [width = "", height = ""] = size.replace(",", "").split(" ");
-    const [left = "", top = ""] = position.replace(",", "").split(" ");
+    const [width = "", height = ""] = size.replace(",", "").trim().split(" ");
+    const [left = "", top = ""] = position.replace(",", "").trim().split(" ");
     return [
       {
         width: parseFloat(width),
@@ -44,7 +44,7 @@ const parseCodeToStyle = function (code = "") {
       size,
       style,
     };
-    result.push(data);
+    result.unshift(data);
   }
   return result;
 };

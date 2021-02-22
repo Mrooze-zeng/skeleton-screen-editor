@@ -1,5 +1,5 @@
 import { Children, cloneElement, useEffect, useRef } from "react";
-import { drawGrid, drawImage, serializeWidthAndHeightOnStyle } from "../utils";
+import { redrawBackground, serializeWidthAndHeightOnStyle } from "../utils";
 
 const Canvas = function ({
   children,
@@ -12,10 +12,13 @@ const Canvas = function ({
 }) {
   const canvasRef = useRef();
   useEffect(() => {
-    drawImage(canvasRef.current, image, width, height);
-    drawGrid(canvasRef.current);
+    redrawBackground(canvasRef.current, image, width, height);
   }, [height, image, width]);
-  const CanvasChildren = function ({ children, canvasRef }) {
+  useEffect(() => {
+    canvasRef.current.image = image;
+  }, [image]);
+
+  const CanvasChildren = function ({ children }) {
     return Children.map(children, (child) => {
       return cloneElement(child, {
         canvas: canvasRef.current,
@@ -35,7 +38,7 @@ const Canvas = function ({
         ref={canvasRef}
       />
       <div onMouseDown={(event) => onMouseDown(event, canvasRef)}>
-        <CanvasChildren children={children} canvasRef={canvasRef} />
+        <CanvasChildren children={children} />
       </div>
     </div>
   );

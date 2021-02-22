@@ -1,61 +1,68 @@
 import { useEffect } from "react";
-import { blockCreator } from "../utils/index";
+import {
+  blockCreator,
+  blockShortCutKeyMap,
+  drawGuideline,
+  redrawBackground,
+} from "../utils/index";
 import { getBlockByType } from "./BlockLists";
 
 const BlockWrapper = function ({
-  id = "",
-  style = {},
+  block = {},
   children = "",
-  type = "",
-  size = {},
-  isActive = false,
+  canvas = "",
   setCurrentBlock = function () {},
   removeBlock = function () {},
   addBlock = function () {},
 }) {
+  const { id = "", style = {}, type = "", size = {}, isActive = false } = block;
   const Block = getBlockByType(type);
   const _handleClick = function (event) {
     event.preventDefault();
     event.stopPropagation();
     !isActive && setCurrentBlock(id);
   };
+
   const _handleKeyDown = function (event) {
     if (
       isActive &&
       (event.target.getAttribute("type") === "block" ||
         event.target === document.body)
     ) {
-      if (event.keyCode === 8) {
-        event.preventDefault();
-        event.stopPropagation();
-        //delete
-        removeBlock(id);
-      } else if (event.keyCode === 67 && event.metaKey) {
-        event.preventDefault();
-        event.stopPropagation();
-        //copy
-        console.log("copy");
-      } else if (event.keyCode === 86 && event.metaKey) {
-        event.preventDefault();
-        event.stopPropagation();
-        //paste
-        const newBlock = blockCreator({
-          type,
-          isActive: true,
-          id: Date.now(),
-          left: style.left + 10,
-          top: style.top + 10,
-          ...size,
-        });
-        addBlock(newBlock, newBlock.id);
-      }
+      const _shortcutHandler =
+        blockShortCutKeyMap(event, {
+          canvas: canvas,
+          remove: removeBlock,
+          add: addBlock,
+          update: setCurrentBlock,
+        })[event.code] || function () {};
+      _shortcutHandler(block);
     }
   };
+
+  const _handleKeyUp = function (event) {
+    if (
+      (isActive &&
+        (event.target.getAttribute("type") === "block" ||
+          event.target === document.body) &&
+        (event.code === "ArrowUp" ||
+          event.code === "ArrowRight" ||
+          event.code === "ArrowDown")) ||
+      event.code === "ArrowLeft"
+    ) {
+      redrawBackground(canvas);
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
   useEffect(() => {
     if (isActive) {
       window.addEventListener("keydown", _handleKeyDown, false);
+      window.addEventListener("keyup", _handleKeyUp, false);
       return () => {
         window.removeEventListener("keydown", _handleKeyDown, false);
+        window.removeEventListener("keyup", _handleKeyUp, false);
       };
     }
   });
@@ -78,6 +85,7 @@ const BlockWrapper = function ({
 
 const BlockActiveLine = function ({
   position = "left",
+  canvas = {},
   isActive = false,
   onLineMove = function () {},
 }) {
@@ -106,6 +114,7 @@ const BlockActiveLine = function ({
     const _up = function () {
       document.removeEventListener("mousemove", _move, false);
       document.removeEventListener("mouseup", _up, false);
+      redrawBackground(canvas);
     };
     document.addEventListener("mousemove", _move, false);
     document.addEventListener("mouseup", _up, false);
@@ -149,11 +158,14 @@ const RenderBlocks = function ({
     position
   ) {
     const currentBlock = blocks.find((block) => block.isActive);
-    const newBlock = blockCreator({
-      ...currentBlock,
-      ...currentBlock.size,
-      ...currentBlock.style,
-    });
+    const [newBlock] = blockCreator(
+      {
+        ...currentBlock,
+        ...currentBlock.size,
+        ...currentBlock.style,
+      },
+      { canvas: canvas }
+    );
 
     if (currentBlock.type === "square") {
       switch (position) {
@@ -206,21 +218,25 @@ const RenderBlocks = function ({
       return;
     }
 
+    drawGuideline(canvas, { ...newBlock.size, ...newBlock.style }, position);
+
     _handleUpdateBlock(currentBlock.id, newBlock);
   };
 
   return blocks.map((block, index) => (
     <BlockWrapper
       key={index}
+      canvas={canvas}
       isActive={block.isActive}
       addBlock={_handleAddBlock}
       setCurrentBlock={_handleUpdateBlock}
       removeBlock={_handleRemoveBlock}
-      {...block}
+      block={block}
     >
       {lines.map((line) => {
         return (
           <BlockActiveLine
+            canvas={canvas}
             key={line}
             position={line}
             isActive={block.isActive}
@@ -233,5 +249,3 @@ const RenderBlocks = function ({
 };
 
 export { RenderBlocks };
-
-export default BlockWrapper;

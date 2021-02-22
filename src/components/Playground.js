@@ -53,13 +53,16 @@ const Playground = function ({
     );
     const canvasRect = event.target.getBoundingClientRect();
 
-    const block = blockCreator({
-      type,
-      isActive: true,
-      left: event.clientX - X - canvasRect.x,
-      top: event.clientY - Y - canvasRect.y,
-      ...size,
-    });
+    const [block] = blockCreator(
+      {
+        type,
+        isActive: true,
+        left: event.clientX - X - canvasRect.x,
+        top: event.clientY - Y - canvasRect.y,
+        ...size,
+      },
+      { canvas: event.target }
+    );
     _setBlocksAndListen([...blocks, block], block.id);
   };
 
