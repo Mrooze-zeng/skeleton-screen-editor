@@ -48,6 +48,10 @@ const serializeWidthAndHeightOnStyle = function (style) {
 const redrawBackground = function (canvas, image, width, height) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, width || canvas.width, height || canvas.height);
+  if (image == null && typeof image == "object") {
+    //hack
+    canvas.image = image;
+  }
   drawImage(
     canvas,
     image || canvas.image,

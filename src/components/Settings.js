@@ -75,7 +75,7 @@ const SetCanvasAccordingToWidthHeight = function ({
       const image = await _readImage(event.data.file);
       onUpdateCanvas({ ...event.data, image });
     } catch (e) {
-      onUpdateCanvas({ ...event.data });
+      onUpdateCanvas({ ...event.data, file: null });
     }
   };
   return (

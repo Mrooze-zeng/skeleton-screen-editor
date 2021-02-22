@@ -9,7 +9,7 @@ function App() {
     width: 450,
     height: 350,
   });
-  console.log("-----");
+  console.log("-----", blocks, canvasAttr);
   return (
     <>
       <Playground
