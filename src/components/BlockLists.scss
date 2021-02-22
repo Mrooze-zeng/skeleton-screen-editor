@@ -1,4 +1,5 @@
 .block-common {
+  transition: left top 0.5s ease;
   i {
     &.block-wrapper-top,
     &.block-wrapper-bottom {
@@ -37,6 +38,9 @@
         cursor: ns-resize;
       }
     }
+  }
+  &:focus {
+    outline: none;
   }
 }
 .block-circle {

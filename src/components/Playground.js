@@ -68,6 +68,20 @@ const Playground = function ({
     event.dataTransfer.dropEffect = "copy";
   };
 
+  const _calculateBoundary = function ({
+    x = 0,
+    y = 0,
+    blockRect,
+    canvasRect,
+  }) {
+    return (
+      x < 0 ||
+      y < 0 ||
+      x + blockRect.width > canvasRect.width ||
+      y + blockRect.height > canvasRect.height
+    );
+  };
+
   const _handleMouseDown = function (event, canvasRef) {
     event.stopPropagation();
     event.preventDefault();
@@ -86,10 +100,28 @@ const Playground = function ({
     const minusY = Math.abs(event.clientY - blockRect.y);
 
     const _move = (e) => {
+      let x = e.clientX - minusX - canvasRect.x;
+      let y = e.clientY - minusY - canvasRect.y;
+      const block = {
+        top: y,
+        right: x + blockRect.width,
+        bottom: y + blockRect.height,
+        left: x,
+        boundary: {
+          top: 0,
+          right: canvasRect.width,
+          bottom: canvasRect.height,
+          left: 0,
+        },
+      };
+
+      if (_calculateBoundary({ x, y, blockRect, canvasRect })) {
+        return;
+      }
       _handleUpdateBlockById(currentBlock.id, {
         style: {
-          left: e.clientX - minusX - canvasRect.x,
-          top: e.clientY - minusY - canvasRect.y,
+          left: x,
+          top: y,
         },
       });
     };
@@ -105,7 +137,7 @@ const Playground = function ({
     return blocks.find((block) => block.isActive) || {};
   };
 
-  console.log("blocks:", blocks);
+  //   console.log("blocks:", blocks);
 
   return (
     <>

@@ -17,39 +17,50 @@ const BlockWrapper = function ({
   const _handleClick = function (event) {
     event.preventDefault();
     event.stopPropagation();
-    setCurrentBlock(id);
+    !isActive && setCurrentBlock(id);
   };
   const _handleKeyDown = function (event) {
-    if (!isActive || event.target.getAttribute("type") !== "block") {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    if (event.keyCode === 8) {
-      //delete
-      removeBlock(id);
-    } else if (event.keyCode === 67 && event.metaKey) {
-      //copy
-      console.log("copy");
-    } else if (event.keyCode === 86 && event.metaKey) {
-      //paste
-      const newBlock = blockCreator({
-        type,
-        isActive: true,
-        id: Date.now(),
-        left: style.left + 10,
-        top: style.top + 10,
-        ...size,
-      });
-      addBlock(newBlock, newBlock.id);
+    if (
+      isActive &&
+      (event.target.getAttribute("type") === "block" ||
+        event.target === document.body)
+    ) {
+      if (event.keyCode === 8) {
+        event.preventDefault();
+        event.stopPropagation();
+        //delete
+        removeBlock(id);
+      } else if (event.keyCode === 67 && event.metaKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        //copy
+        console.log("copy");
+      } else if (event.keyCode === 86 && event.metaKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        //paste
+        const newBlock = blockCreator({
+          type,
+          isActive: true,
+          id: Date.now(),
+          left: style.left + 10,
+          top: style.top + 10,
+          ...size,
+        });
+        addBlock(newBlock, newBlock.id);
+      }
     }
   };
   useEffect(() => {
-    isActive && window.addEventListener("keydown", _handleKeyDown, false);
+    if (isActive) {
+      window.addEventListener("keydown", _handleKeyDown, false);
+      return () => {
+        window.removeEventListener("keydown", _handleKeyDown, false);
+      };
+    }
+  });
+  useEffect(() => {
     isActive && document.getElementById(id).focus();
-    return () => {
-      isActive && window.removeEventListener("keydown", _handleKeyDown, false);
-    };
   });
   return (
     <Block
@@ -164,34 +175,34 @@ const RenderBlocks = function ({
           break;
       }
     } else if (currentBlock.type === "circle") {
+      let minus = top || right || bottom || left;
+
       switch (position) {
-        case "top":
-          newBlock.size.radius = currentBlock.size.radius - top;
-          newBlock.style.top = top + currentBlock.style.top;
-          break;
-        case "right":
-          newBlock.size.radius = right + currentBlock.size.radius;
-          break;
-        case "bottom":
-          newBlock.size.radius = bottom + currentBlock.size.radius;
-          break;
         case "left":
-          newBlock.size.radius = currentBlock.size.radius - left;
-          newBlock.style.left = left + currentBlock.style.left;
+        case "top":
+          minus *= -1;
           break;
         default:
+          minus *= 1;
           break;
       }
+      newBlock.style.top = currentBlock.style.top - minus;
+      newBlock.style.left = currentBlock.style.left - minus;
+      newBlock.size.radius = currentBlock.size.radius + minus;
+
       newBlock.size.width = newBlock.size.radius * 2;
       newBlock.size.height = newBlock.size.radius * 2;
     }
+
     if (
-      (newBlock.size.width <= 10 && newBlock.size.width > 0) ||
-      (newBlock.size.height <= 10 && newBlock.size.height > 0) ||
-      (newBlock.size.radius <= 10 && newBlock.size.radius > 0)
+      newBlock.size.width <= 10 ||
+      newBlock.size.height <= 10 ||
+      newBlock.style.left + newBlock.size.width > canvas.width ||
+      newBlock.style.top + newBlock.size.height > canvas.height
     ) {
       return;
     }
+
     _handleUpdateBlock(currentBlock.id, newBlock);
   };
 
