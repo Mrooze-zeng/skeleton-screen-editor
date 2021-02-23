@@ -38,7 +38,7 @@ const drawImage = function (canvas, image, width, height) {
     return;
   }
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(image, 0, 0, width, height);
+  ctx.drawImage(image, 0, 0, width, (width * image.height) / image.width);
 };
 
 const serializeWidthAndHeightOnStyle = function (style) {
@@ -161,6 +161,12 @@ const blockCreator = function (
   }
   if (top <= 0) {
     top = 0;
+  }
+  if (width > canvas.width) {
+    width = canvas.width;
+  }
+  if (height > canvas.height) {
+    height = canvas.height;
   }
   drawGuideline(canvas, { top, left, width, height }, side);
   return [
