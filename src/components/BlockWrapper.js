@@ -137,7 +137,44 @@ const RenderBlocks = function ({
   canvas = "",
   onUpdateBlock = function () {},
 }) {
-  const lines = ["top", "right", "bottom", "left"];
+  const lines = [
+    [
+      "top",
+      function (canvas = {}, { left = 0 }) {
+        return {
+          left: `${-left}px`,
+          width: `${canvas.width}px`,
+        };
+      },
+    ],
+    [
+      "right",
+      function (canvas = {}, { top = 0 }) {
+        return {
+          top: `${-top}px`,
+          height: `${canvas.height}px`,
+        };
+      },
+    ],
+    [
+      "bottom",
+      function (canvas = {}, { left = 0 }) {
+        return {
+          left: `${-left}px`,
+          width: `${canvas.width}px`,
+        };
+      },
+    ],
+    [
+      "left",
+      function (canvas = {}, { top = 0 }) {
+        return {
+          top: `${-top}px`,
+          height: `${canvas.height}px`,
+        };
+      },
+    ],
+  ];
 
   const _handleUpdateBlock = function (blockItems = [], isResetActive = false) {
     const activeBlockIds = [];
@@ -251,14 +288,19 @@ const RenderBlocks = function ({
       block={block}
       blocks={blocks}
     >
-      {lines.map((line) => {
+      {lines.map(([line, activeStyle]) => {
         return (
           <BlockActiveLine
             canvas={canvas}
             key={line}
+            block={block}
             position={line}
             isActive={block.isActive}
-            onLineMove={_handleLineMove}
+            // todo 用dom 替代canvas绘画规划线
+            activeStyle={activeStyle}
+            onLineMove={(newPosition, position) =>
+              _handleLineMove(newPosition, position, activeStyle)
+            }
           />
         );
       })}

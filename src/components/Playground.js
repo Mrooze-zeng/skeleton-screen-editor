@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { blockCreator, throttle } from "../utils";
+import { blockCreator, calculateBlockGroupHeight, throttle } from "../utils";
 import BlockLists from "./BlockLists";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
@@ -124,7 +124,7 @@ const Playground = function ({
     return blocks.find((block) => block.isActive) || {};
   };
 
-  //   console.log("blocks:", blocks);
+  console.log("blocks:", blocks);
 
   return (
     <>
@@ -174,7 +174,11 @@ const Playground = function ({
                 codeBlocks.forEach((block) => {
                   blockIds.push(block.id);
                 });
-                //todo 代码块添加到聚焦图层下方
+                let extraHeight = calculateBlockGroupHeight(blocks, 15);
+                codeBlocks = codeBlocks.map((block) => {
+                  block.style.top += extraHeight;
+                  return block;
+                });
                 _setBlocksAndListen([...blocks, ...codeBlocks], blockIds);
               }
             }}

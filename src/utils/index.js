@@ -278,7 +278,6 @@ const blockShortCutKeyMap = function (
         add(newBlocks, true);
       }
     },
-    //todo 移动到边界时禁止其他图层挤压
     ArrowUp: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
@@ -399,6 +398,14 @@ const blockShortCutKeyMap = function (
   };
 };
 
+const calculateBlockGroupHeight = function (blocks = [], margin = 0) {
+  let _blocksheights = [0];
+  blocks.forEach((block) => {
+    _blocksheights.push(block.style.top + block.size.height);
+  });
+  return Math.max(..._blocksheights) + margin;
+};
+
 export {
   drawGrid,
   drawImage,
@@ -408,4 +415,5 @@ export {
   blockShortCutKeyMap,
   redrawBackground,
   drawGuideline,
+  calculateBlockGroupHeight,
 };
