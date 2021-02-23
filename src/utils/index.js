@@ -201,6 +201,30 @@ const throttle = function (delay = 100) {
   };
 };
 
+const _blockGroupBoundaryMin = function (blocks = [], side = "top") {
+  let _value = [];
+  blocks.forEach((block) => {
+    if (block.isActive) {
+      _value.push(block.style[side]);
+    }
+  });
+  return Math.min(..._value) === 0;
+};
+const _blockGroupBoundaryMax = function (
+  blocks = [],
+  extra = "width",
+  side = "top",
+  max = 0
+) {
+  let _value = [];
+  blocks.forEach((block) => {
+    if (block.isActive) {
+      _value.push(block.style[side] + block.size[extra]);
+    }
+  });
+  return Math.max(..._value) === max;
+};
+
 const blockShortCutKeyMap = function (
   event,
   {
@@ -251,14 +275,20 @@ const blockShortCutKeyMap = function (
             newBlocks.push(newBlock);
           }
         });
-        add(newBlocks);
+        add(newBlocks, true);
       }
     },
     //todo 移动到边界时禁止其他图层挤压
     ArrowUp: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
+
+      if (_blockGroupBoundaryMin([...blocks], "top")) {
+        return;
+      }
+
       let newBlocks = [];
+
       blocks.forEach((block) => {
         if (block.isActive) {
           let top = block.style.top;
@@ -282,6 +312,11 @@ const blockShortCutKeyMap = function (
     ArrowRight: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
+
+      if (_blockGroupBoundaryMax([...blocks], "width", "left", canvas.width)) {
+        return;
+      }
+
       let newBlocks = [];
       blocks.forEach((block) => {
         if (block.isActive) {
@@ -306,6 +341,11 @@ const blockShortCutKeyMap = function (
     ArrowDown: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
+
+      if (_blockGroupBoundaryMax([...blocks], "height", "top", canvas.height)) {
+        return;
+      }
+
       let newBlocks = [];
       blocks.forEach((block) => {
         if (block.isActive) {
@@ -330,6 +370,11 @@ const blockShortCutKeyMap = function (
     ArrowLeft: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
+
+      if (_blockGroupBoundaryMin([...blocks], "left")) {
+        return;
+      }
+
       let newBlocks = [];
       blocks.forEach((block) => {
         if (block.isActive) {

@@ -124,7 +124,7 @@ const Playground = function ({
     return blocks.find((block) => block.isActive) || {};
   };
 
-  console.log("blocks:", blocks);
+  //   console.log("blocks:", blocks);
 
   return (
     <>
@@ -152,10 +152,34 @@ const Playground = function ({
             onClick={() => {
               let code = window.prompt("请填入样式代码") || "";
               code = code.replace(/\r|\n|\s{2}/g, "");
-              code && _setBlocksAndListen(parseCodeToStyle(code));
+              if (code) {
+                let codeBlocks = parseCodeToStyle(code);
+                let blockIds = [];
+                codeBlocks.forEach((block) => {
+                  blockIds.push(block.id);
+                });
+                _setBlocksAndListen([...codeBlocks], blockIds);
+              }
             }}
           >
             导入样式代码
+          </button>
+          <button
+            onClick={() => {
+              let code = window.prompt("请填入样式代码") || "";
+              code = code.replace(/\r|\n|\s{2}/g, "");
+              if (code) {
+                let codeBlocks = parseCodeToStyle(code);
+                let blockIds = [];
+                codeBlocks.forEach((block) => {
+                  blockIds.push(block.id);
+                });
+                //todo 代码块添加到聚焦图层下方
+                _setBlocksAndListen([...blocks, ...codeBlocks], blockIds);
+              }
+            }}
+          >
+            添加样式块
           </button>
         </div>
 

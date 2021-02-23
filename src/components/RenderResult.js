@@ -39,7 +39,7 @@ const parseCodeToStyle = function (code = "") {
     const [size, style] = _getSize(codeGroup[i]);
     const type = _getType(codeGroup[i]);
     const data = {
-      id: i + 1,
+      id: Date.now() + i + 1,
       type,
       size,
       style,

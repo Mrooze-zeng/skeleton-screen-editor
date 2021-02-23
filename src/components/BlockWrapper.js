@@ -40,7 +40,7 @@ const BlockWrapper = function ({
           add: addBlock,
           update: setCurrentBlock,
         })[event.code] || function () {};
-      _shortcutHandler(blocks);
+      _shortcutHandler([...blocks]);
     }
   };
 
@@ -159,11 +159,11 @@ const RenderBlocks = function ({
       blocks.filter((block) => selectedIds.indexOf(block.id) === -1)
     );
   };
-  const _handleAddBlock = function (newBlocks = []) {
+  const _handleAddBlock = function (newBlocks = [], isResetActive = false) {
     const activeIds = [];
     blocks.forEach((block) => {
       if (block.isActive) {
-        activeIds.push(block.id);
+        !isResetActive && activeIds.push(block.id);
       }
     });
     newBlocks.forEach((block) => activeIds.push(block.id));
