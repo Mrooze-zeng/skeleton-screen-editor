@@ -88,6 +88,8 @@ const drawGuideline = function (
   { top = 0, left = 0, width = 0, height = 0 },
   side = ""
 ) {
+  //todo 规划线被图层遮盖
+  //todo 图层组移动规划线不正确
   if (side) {
     switch (side) {
       case "top":
@@ -203,16 +205,22 @@ const blockShortCutKeyMap = function (
   event,
   {
     canvas = {},
-    remove = function (blockId = "") {},
-    add = function (newBlock = {}, newBlockId = "") {},
+    remove = function (activeIds = []) {},
+    add = function (newBlocks = []) {},
     update = function (id = "", block = {}) {},
   }
 ) {
   return {
-    Backspace: function ({ id = "" }) {
+    Backspace: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
-      remove(id);
+      let selectedIds = [];
+      blocks.forEach((block) => {
+        if (block.isActive) {
+          selectedIds.push(block.id);
+        }
+      });
+      remove(selectedIds);
     },
     KeyC: function () {
       if (event.metaKey) {
@@ -221,96 +229,127 @@ const blockShortCutKeyMap = function (
         console.log("copy");
       }
     },
-    KeyV: function ({ type = "", style = {}, size = {} }) {
+    KeyV: function (blocks = []) {
       if (event.metaKey) {
         event.preventDefault();
         event.stopPropagation();
-        const [newBlock] = blockCreator(
-          {
-            type,
-            isActive: true,
-            id: Date.now(),
-            left: style.left + 10,
-            top: style.top + 10,
-            ...size,
-          },
-          { canvas, extra: 15 }
-        );
-        add(newBlock, newBlock.id);
+        let newBlocks = [];
+        blocks.forEach((block, i) => {
+          if (block.isActive) {
+            const { type, style, size } = block;
+            const [newBlock] = blockCreator(
+              {
+                type,
+                isActive: true,
+                id: Date.now() + i,
+                left: style.left + 10,
+                top: style.top + 10,
+                ...size,
+              },
+              { canvas, extra: 15 }
+            );
+            newBlocks.push(newBlock);
+          }
+        });
+        add(newBlocks);
       }
     },
-    ArrowUp: function (block = { style: {} }) {
+    //todo 移动到边界时禁止其他图层挤压
+    ArrowUp: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
-      let top = block.style.top;
-      top -= 1;
-      if (top >= 0) {
-        const [newBlock] = blockCreator(
-          {
-            ...block,
-            ...block.size,
-            ...block.style,
-            top,
-          },
-          { canvas, side: "top" }
-        );
-        update(newBlock.id, newBlock);
-      }
+      let newBlocks = [];
+      blocks.forEach((block) => {
+        if (block.isActive) {
+          let top = block.style.top;
+          top -= 1;
+          if (top >= 0) {
+            const [newBlock] = blockCreator(
+              {
+                ...block,
+                ...block.size,
+                ...block.style,
+                top,
+              },
+              { canvas, side: "top" }
+            );
+            newBlocks.push(newBlock);
+          }
+        }
+      });
+      update(newBlocks);
     },
-    ArrowRight: function (block = { style: {} }) {
+    ArrowRight: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
-      let left = block.style.left;
-      left += 1;
-      if (left + block.size.width <= canvas.width) {
-        const [newBlock] = blockCreator(
-          {
-            ...block,
-            ...block.size,
-            ...block.style,
-            left,
-          },
-          { canvas, side: "right" }
-        );
-
-        update(newBlock.id, newBlock);
-      }
+      let newBlocks = [];
+      blocks.forEach((block) => {
+        if (block.isActive) {
+          let left = block.style.left;
+          left += 1;
+          if (left + block.size.width <= canvas.width) {
+            const [newBlock] = blockCreator(
+              {
+                ...block,
+                ...block.size,
+                ...block.style,
+                left,
+              },
+              { canvas, side: "right" }
+            );
+            newBlocks.push(newBlock);
+          }
+        }
+      });
+      update(newBlocks);
     },
-    ArrowDown: function (block = { style: {} }) {
+    ArrowDown: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
-      let top = block.style.top;
-      top += 1;
-      if (top + block.size.height <= canvas.height) {
-        const [newBlock] = blockCreator(
-          {
-            ...block,
-            ...block.size,
-            ...block.style,
-            top,
-          },
-          { canvas, side: "bottom" }
-        );
-        update(newBlock.id, newBlock);
-      }
+      let newBlocks = [];
+      blocks.forEach((block) => {
+        if (block.isActive) {
+          let top = block.style.top;
+          top += 1;
+          if (top + block.size.height <= canvas.height) {
+            const [newBlock] = blockCreator(
+              {
+                ...block,
+                ...block.size,
+                ...block.style,
+                top,
+              },
+              { canvas, side: "bottom" }
+            );
+            newBlocks.push(newBlock);
+          }
+        }
+      });
+      update(newBlocks);
     },
-    ArrowLeft: function (block = { style: {} }) {
+    ArrowLeft: function (blocks = []) {
       event.preventDefault();
       event.stopPropagation();
-      let left = block.style.left;
-      left -= 1;
-      if (left >= 0) {
-        const [newBlock] = blockCreator(
-          {
-            ...block,
-            ...block.size,
-            ...block.style,
-            left,
-          },
-          { canvas, side: "left" }
-        );
-        update(newBlock.id, newBlock);
-      }
+      let newBlocks = [];
+      blocks.forEach((block) => {
+        if (block.isActive) {
+          let left = block.style.left;
+          left -= 1;
+          if (left >= 0) {
+            const [newBlock] = blockCreator(
+              {
+                ...block,
+                ...block.size,
+                ...block.style,
+                left,
+              },
+              { canvas, side: "left" }
+            );
+            newBlocks.push(newBlock);
+          }
+        }
+      });
+      update(newBlocks);
     },
   };
 };

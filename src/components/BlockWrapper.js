@@ -9,6 +9,7 @@ import { getBlockByType } from "./BlockLists";
 
 const BlockWrapper = function ({
   block = {},
+  blocks = [],
   children = "",
   canvas = "",
   setCurrentBlock = function () {},
@@ -20,7 +21,10 @@ const BlockWrapper = function ({
   const _handleClick = function (event) {
     event.preventDefault();
     event.stopPropagation();
-    !isActive && setCurrentBlock(id);
+    if (event.metaKey && !isActive) {
+      return setCurrentBlock([{ id, isActive: true }]);
+    }
+    setCurrentBlock([{ id, isActive: !isActive }], true);
   };
 
   const _handleKeyDown = function (event) {
@@ -36,7 +40,7 @@ const BlockWrapper = function ({
           add: addBlock,
           update: setCurrentBlock,
         })[event.code] || function () {};
-      _shortcutHandler(block);
+      _shortcutHandler(blocks);
     }
   };
 
@@ -135,22 +139,35 @@ const RenderBlocks = function ({
 }) {
   const lines = ["top", "right", "bottom", "left"];
 
-  const _handleUpdateBlock = function (id = "", newBlock = {}) {
+  const _handleUpdateBlock = function (blockItems = [], isResetActive = false) {
+    const activeBlockIds = [];
+    const newBlocks = blocks.map((block) => {
+      let item = blockItems.find((item) => item.id === block.id) || {};
+      if (isResetActive) {
+        block.isActive = false;
+      }
+      block = { ...block, ...item };
+      if (block.isActive) {
+        activeBlockIds.push(block.id);
+      }
+      return { ...block, ...item };
+    });
+    onUpdateBlock(newBlocks, activeBlockIds);
+  };
+  const _handleRemoveBlock = function (selectedIds = []) {
     onUpdateBlock(
-      blocks.map((block) => {
-        if (block.id === id) {
-          return { ...block, ...newBlock };
-        }
-        return block;
-      }),
-      id
+      blocks.filter((block) => selectedIds.indexOf(block.id) === -1)
     );
   };
-  const _handleRemoveBlock = function (id = "") {
-    onUpdateBlock(blocks.filter((block) => block.id !== id));
-  };
-  const _handleAddBlock = function (block = {}) {
-    onUpdateBlock([...blocks, block], block.id);
+  const _handleAddBlock = function (newBlocks = []) {
+    const activeIds = [];
+    blocks.forEach((block) => {
+      if (block.isActive) {
+        activeIds.push(block.id);
+      }
+    });
+    newBlocks.forEach((block) => activeIds.push(block.id));
+    onUpdateBlock([...blocks, ...newBlocks], activeIds);
   };
 
   const _handleLineMove = function (
@@ -220,7 +237,7 @@ const RenderBlocks = function ({
 
     drawGuideline(canvas, { ...newBlock.size, ...newBlock.style }, position);
 
-    _handleUpdateBlock(currentBlock.id, newBlock);
+    _handleUpdateBlock([newBlock]);
   };
 
   return blocks.map((block, index) => (
@@ -232,6 +249,7 @@ const RenderBlocks = function ({
       setCurrentBlock={_handleUpdateBlock}
       removeBlock={_handleRemoveBlock}
       block={block}
+      blocks={blocks}
     >
       {lines.map((line) => {
         return (

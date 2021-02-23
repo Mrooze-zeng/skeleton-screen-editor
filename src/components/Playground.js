@@ -17,14 +17,9 @@ const Playground = function ({
 }) {
   const [blocks, setBlocks] = useState([]);
 
-  const _setBlocksAndListen = function (blocks = [], id = "") {
+  const _setBlocksAndListen = function (blocks = [], activeIds = []) {
     blocks = blocks.map((block) => {
-      if (block.isActive) {
-        block.isActive = false;
-      }
-      if (block.id === id) {
-        block.isActive = true;
-      }
+      block.isActive = activeIds.indexOf(block.id) >= 0;
       return block;
     });
     setBlocks(blocks);
@@ -42,10 +37,11 @@ const Playground = function ({
         }
         return block;
       }),
-      id
+      [id]
     );
   };
   const _handleDrop = function (event) {
+    //todo 图层上不能放置新的图层
     event.preventDefault();
     event.stopPropagation();
     const { X, Y, type, size } = JSON.parse(
@@ -63,7 +59,7 @@ const Playground = function ({
       },
       { canvas: event.target }
     );
-    _setBlocksAndListen([...blocks, block], block.id);
+    _setBlocksAndListen([...blocks, block], [block.id]);
   };
 
   const _handleDragOver = function (event) {
