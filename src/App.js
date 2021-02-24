@@ -6,10 +6,10 @@ import RenderResult from "./components/RenderResult";
 function App() {
   const [blocks, setBlocks] = useState([]);
   const [canvasAttr, setCanvasAttr] = useState({
-    width: 450,
-    height: 350,
+    width: window.innerWidth,
+    height: window.innerHeight / 2,
   });
-  //   console.log("-----", blocks, canvasAttr);
+  console.log("-----", blocks, canvasAttr);
   return (
     <>
       <Playground

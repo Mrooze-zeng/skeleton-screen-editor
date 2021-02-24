@@ -1,3 +1,4 @@
+import { blockGroup } from "../utils";
 import Form from "./Form";
 
 const RenderInput = function ({ type = "square" }) {
@@ -54,7 +55,7 @@ const SetCanvasAccordingToWidthHeight = function ({
   width = 450,
   onUpdateCanvas = function () {},
 }) {
-  const _readImage = function (file) {
+  const _readImage = function (file, imageWidth) {
     return new Promise((resolve, reject) => {
       if (!file.name) {
         return reject();
@@ -63,6 +64,9 @@ const SetCanvasAccordingToWidthHeight = function ({
       reader.onload = function () {
         const image = new Image();
         image.onload = function () {
+          const originalWidth = image.width;
+          image.width = imageWidth;
+          image.height = (imageWidth * image.height) / originalWidth;
           resolve(image);
         };
         image.src = this.result;
@@ -72,7 +76,10 @@ const SetCanvasAccordingToWidthHeight = function ({
   };
   const _handleSubmit = async function (event) {
     try {
-      const image = await _readImage(event.data.file);
+      const image = await _readImage(
+        event.data.file,
+        parseFloat(event.data.imageWidth)
+      );
       onUpdateCanvas({ ...event.data, image });
     } catch (e) {
       onUpdateCanvas({ ...event.data, file: null });
@@ -106,6 +113,15 @@ const SetCanvasAccordingToWidthHeight = function ({
         <input type="file" accept="image/*" name="file" />
       </div>
       <div>
+        <label htmlFor="imageWidth">底图宽度:</label>
+        <input
+          type="number"
+          name="imageWidth"
+          id="imageWidth"
+          defaultValue={parseFloat(width)}
+        />
+      </div>
+      <div>
         <button type="submit">提交</button>
         <button type="reset">重置</button>
       </div>
@@ -119,15 +135,22 @@ const Settings = function ({
   onUpdateBlock = function () {},
   onUpdateCanvas = function () {},
 }) {
-  const currentBlock = blocks.find((block) => block.isActive) || {};
-  if (!currentBlock.id) {
+  const [activeGroup] = blockGroup(blocks, true);
+  let currentBlock = {};
+  console.log(activeGroup);
+  if (!activeGroup.length) {
     return (
       <SetCanvasAccordingToWidthHeight
         {...canvasAttr}
         onUpdateCanvas={onUpdateCanvas}
       />
     );
+  } else if (activeGroup.length === 1) {
+    currentBlock = activeGroup[0];
+  } else {
+    return "";
   }
+
   const _handleSubmit = function (event) {
     const {
       color = "",
@@ -161,26 +184,28 @@ const Settings = function ({
           id="color"
         />
       </div>
-      <p>微调</p>
+      <p>---微调---</p>
       <div>
         <label htmlFor="left">X:</label>
         <input
           key={currentBlock.style.left}
           type="number"
-          defaultValue={parseFloat(currentBlock.style.left)}
+          defaultValue={parseInt(currentBlock.style.left)}
           name="left"
           id="left"
         />
+        <small>快捷键:左右箭头</small>
       </div>
       <div>
         <label htmlFor="top">Y:</label>
         <input
           key={currentBlock.style.top}
           type="number"
-          defaultValue={parseFloat(currentBlock.style.top)}
+          defaultValue={parseInt(currentBlock.style.top)}
           name="top"
           id="top"
         />
+        <small>快捷键:上下箭头</small>
       </div>
       <div>
         <button type="submit">提交</button>

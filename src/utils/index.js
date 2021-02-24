@@ -33,12 +33,12 @@ const drawGrid = function (
   }
 };
 
-const drawImage = function (canvas, image, width, height) {
+const drawImage = function (canvas, image) {
   if (!image) {
     return;
   }
   const ctx = canvas.getContext("2d");
-  ctx.drawImage(image, 0, 0, width, (width * image.height) / image.width);
+  ctx.drawImage(image, 0, 0, image.width, image.height);
 };
 
 const serializeWidthAndHeightOnStyle = function (style) {
@@ -52,12 +52,7 @@ const redrawBackground = function (canvas, image, width, height) {
     //hack
     canvas.image = image;
   }
-  drawImage(
-    canvas,
-    image || canvas.image,
-    width || canvas.width,
-    height || canvas.height
-  );
+  drawImage(canvas, image || canvas.image);
   drawGrid(canvas);
   return ctx;
 };
@@ -201,28 +196,48 @@ const throttle = function (delay = 100) {
   };
 };
 
-const _blockGroupBoundaryMin = function (blocks = [], side = "top") {
-  let _value = [];
-  blocks.forEach((block) => {
-    if (block.isActive) {
-      _value.push(block.style[side]);
-    }
-  });
-  return Math.min(..._value) === 0;
-};
-const _blockGroupBoundaryMax = function (
+const blockGroupBoundaryMin = function (
   blocks = [],
-  extra = "width",
   side = "top",
-  max = 0
+  filterAll = false
 ) {
   let _value = [];
   blocks.forEach((block) => {
-    if (block.isActive) {
+    if (block.isActive || filterAll) {
+      _value.push(block.style[side]);
+    }
+  });
+  let minValue = Math.min(..._value);
+  return [minValue === 0, minValue];
+};
+const blockGroupBoundaryMax = function (
+  blocks = [],
+  extra = "width",
+  side = "top",
+  max = 0,
+  filterAll = false
+) {
+  let _value = [];
+  blocks.forEach((block) => {
+    if (block.isActive || filterAll) {
       _value.push(block.style[side] + block.size[extra]);
     }
   });
-  return Math.max(..._value) === max;
+  let maxValue = Math.max(..._value);
+  return [maxValue === max, maxValue];
+};
+
+const blockGroup = function (blocks = []) {
+  const activeBlock = [];
+  const inactiveBlock = [];
+  blocks.forEach((block) => {
+    if (block.isActive) {
+      activeBlock.push(block);
+    } else {
+      inactiveBlock.push(block);
+    }
+  });
+  return [activeBlock, inactiveBlock];
 };
 
 const blockShortCutKeyMap = function (
@@ -282,7 +297,7 @@ const blockShortCutKeyMap = function (
       event.preventDefault();
       event.stopPropagation();
 
-      if (_blockGroupBoundaryMin([...blocks], "top")) {
+      if (blockGroupBoundaryMin([...blocks], "top")[0]) {
         return;
       }
 
@@ -312,7 +327,9 @@ const blockShortCutKeyMap = function (
       event.preventDefault();
       event.stopPropagation();
 
-      if (_blockGroupBoundaryMax([...blocks], "width", "left", canvas.width)) {
+      if (
+        blockGroupBoundaryMax([...blocks], "width", "left", canvas.width)[0]
+      ) {
         return;
       }
 
@@ -341,7 +358,9 @@ const blockShortCutKeyMap = function (
       event.preventDefault();
       event.stopPropagation();
 
-      if (_blockGroupBoundaryMax([...blocks], "height", "top", canvas.height)) {
+      if (
+        blockGroupBoundaryMax([...blocks], "height", "top", canvas.height)[0]
+      ) {
         return;
       }
 
@@ -370,7 +389,7 @@ const blockShortCutKeyMap = function (
       event.preventDefault();
       event.stopPropagation();
 
-      if (_blockGroupBoundaryMin([...blocks], "left")) {
+      if (blockGroupBoundaryMin([...blocks], "left")[0]) {
         return;
       }
 
@@ -416,4 +435,7 @@ export {
   redrawBackground,
   drawGuideline,
   calculateBlockGroupHeight,
+  blockGroupBoundaryMin,
+  blockGroupBoundaryMax,
+  blockGroup,
 };

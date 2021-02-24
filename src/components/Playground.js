@@ -1,5 +1,10 @@
 import { useCallback, useState } from "react";
-import { blockCreator, calculateBlockGroupHeight, throttle } from "../utils";
+import {
+  blockCreator,
+  blockGroupBoundaryMin,
+  calculateBlockGroupHeight,
+  throttle,
+} from "../utils";
 import BlockLists from "./BlockLists";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
@@ -53,8 +58,8 @@ const Playground = function ({
       {
         type,
         isActive: true,
-        left: event.clientX - X - canvasRect.x,
-        top: event.clientY - Y - canvasRect.y,
+        left: parseInt(event.clientX - X - canvasRect.x),
+        top: parseInt(event.clientY - Y - canvasRect.y),
         ...size,
       },
       { canvas: event.target }
@@ -137,10 +142,17 @@ const Playground = function ({
         <RenderBlocks blocks={blocks} onUpdateBlock={_setBlocksAndListen} />
       </Canvas>
       <div style={{ display: "flex" }}>
-        <BlockLists />
+        <div style={{ display: "flex", padding: 15 }}>
+          <h2>预设:</h2>
+          <BlockLists />
+        </div>
         <div>
           <button
             onClick={() => {
+              onCanvasChange({
+                ...canvasAttr,
+                height: window.innerHeight / 2,
+              });
               _setBlocksAndListen([]);
             }}
           >
@@ -174,10 +186,18 @@ const Playground = function ({
                 codeBlocks.forEach((block) => {
                   blockIds.push(block.id);
                 });
-                let extraHeight = calculateBlockGroupHeight(blocks, 15);
+                const extraHeight = calculateBlockGroupHeight(blocks, 15);
+                const min = blockGroupBoundaryMin(codeBlocks, "top", true)[1];
                 codeBlocks = codeBlocks.map((block) => {
-                  block.style.top += extraHeight;
+                  block.style.top += extraHeight - min;
                   return block;
+                });
+                onCanvasChange({
+                  ...canvasAttr,
+                  height: calculateBlockGroupHeight(
+                    [...blocks, ...codeBlocks],
+                    15
+                  ),
                 });
                 _setBlocksAndListen([...blocks, ...codeBlocks], blockIds);
               }
