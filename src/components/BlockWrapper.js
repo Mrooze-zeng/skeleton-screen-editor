@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   blockCreator,
   blockShortCutKeyMap,
-  drawGuideline,
   redrawBackground,
 } from "../utils/index";
 import { getBlockByType } from "./BlockLists";
@@ -88,11 +87,14 @@ const BlockWrapper = function ({
 };
 
 const BlockActiveLine = function ({
+  block = {},
   position = "left",
   canvas = {},
   isActive = false,
   onLineMove = function () {},
+  activeStyle = function () {},
 }) {
+  const [isLineActive, setIsLineActive] = useState(false);
   const _handleMouseDown = function (event) {
     if (!isActive) {
       return;
@@ -113,12 +115,13 @@ const BlockActiveLine = function ({
       } else if (position === "top" || position === "bottom") {
         newPosition[position] = e.clientY - lineRect.y;
       }
-      onLineMove(newPosition, position);
+      onLineMove(block, newPosition, position);
     };
     const _up = function () {
       document.removeEventListener("mousemove", _move, false);
       document.removeEventListener("mouseup", _up, false);
-      redrawBackground(canvas);
+      //以下代码被注释:用dom 替代canvas绘画规划线
+      //   redrawBackground(canvas);
     };
     document.addEventListener("mousemove", _move, false);
     document.addEventListener("mouseup", _up, false);
@@ -127,6 +130,9 @@ const BlockActiveLine = function ({
     <i
       className={`block-wrapper-${position}`}
       onMouseDown={_handleMouseDown}
+      onMouseOver={() => setIsLineActive(true)}
+      onMouseOut={() => setIsLineActive(false)}
+      style={isLineActive ? activeStyle(canvas, block.style) : {}}
     ></i>
   );
 };
@@ -208,10 +214,10 @@ const RenderBlocks = function ({
   };
 
   const _handleLineMove = function (
+    currentBlock = {},
     { left = 0, right = 0, top = 0, bottom = 0 },
     position
   ) {
-    const currentBlock = blocks.find((block) => block.isActive);
     const [newBlock] = blockCreator(
       {
         ...currentBlock,
@@ -271,10 +277,12 @@ const RenderBlocks = function ({
     ) {
       return;
     }
+    //以下代码被注释:用dom 替代canvas绘画规划线
+    // drawGuideline(canvas, { ...newBlock.size, ...newBlock.style }, position);
 
-    drawGuideline(canvas, { ...newBlock.size, ...newBlock.style }, position);
+    newBlock.isActive = true;
 
-    _handleUpdateBlock([newBlock]);
+    _handleUpdateBlock([newBlock], true);
   };
 
   return blocks.map((block, index) => (
@@ -296,11 +304,8 @@ const RenderBlocks = function ({
             block={block}
             position={line}
             isActive={block.isActive}
-            // todo 用dom 替代canvas绘画规划线
             activeStyle={activeStyle}
-            onLineMove={(newPosition, position) =>
-              _handleLineMove(newPosition, position, activeStyle)
-            }
+            onLineMove={_handleLineMove}
           />
         );
       })}

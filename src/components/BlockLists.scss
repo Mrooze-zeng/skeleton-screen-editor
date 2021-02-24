@@ -27,6 +27,7 @@
   }
   &[isactive="true"] {
     cursor: move;
+    z-index: 1;
     i {
       background-color: #59c7f9;
       &.block-wrapper-left,

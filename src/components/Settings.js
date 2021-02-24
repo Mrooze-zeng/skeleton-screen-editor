@@ -87,6 +87,7 @@ const SetCanvasAccordingToWidthHeight = function ({
   };
   return (
     <Form onSubmit={_handleSubmit}>
+      <h3>设置画布属性:</h3>
       <div>
         <label htmlFor="">画布宽度:</label>
         <input
@@ -173,6 +174,7 @@ const Settings = function ({
 
   return (
     <Form onSubmit={_handleSubmit}>
+      <h3>设置块属性:</h3>
       <RenderInput {...currentBlock} />
       <div>
         <label htmlFor="color">颜色:</label>
@@ -194,7 +196,6 @@ const Settings = function ({
           name="left"
           id="left"
         />
-        <small>快捷键:左右箭头</small>
       </div>
       <div>
         <label htmlFor="top">Y:</label>
@@ -205,7 +206,6 @@ const Settings = function ({
           name="top"
           id="top"
         />
-        <small>快捷键:上下箭头</small>
       </div>
       <div>
         <button type="submit">提交</button>

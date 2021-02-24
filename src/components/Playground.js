@@ -104,6 +104,7 @@ const Playground = function ({
     const minusY = Math.abs(event.clientY - blockRect.y);
 
     const _move = (e) => {
+      //todo 支持block group 移动；
       let x = e.clientX - minusX - canvasRect.x;
       let y = e.clientY - minusY - canvasRect.y;
 
@@ -141,12 +142,14 @@ const Playground = function ({
       >
         <RenderBlocks blocks={blocks} onUpdateBlock={_setBlocksAndListen} />
       </Canvas>
-      <div style={{ display: "flex" }}>
-        <div style={{ display: "flex", padding: 15 }}>
-          <h2>预设:</h2>
-          <BlockLists />
+      <div style={{ display: "flex", minHeight: 250 }}>
+        <div style={{ border: "1px solid lightgray" }}>
+          <h2>可拖拽预设:</h2>
+          <div style={{ display: "flex", padding: 15 }}>
+            <BlockLists />
+          </div>
         </div>
-        <div>
+        <div className="button-group">
           <button
             onClick={() => {
               onCanvasChange({
@@ -218,6 +221,13 @@ const Playground = function ({
             [onCanvasChange]
           )}
         />
+        <ul>
+          <h3>快捷键:</h3>
+          <li>Delete: 删除</li>
+          <li>Command+V: 复制选中的块</li>
+          <li>ArrowUp|ArrowDown|ArrowLeft|ArrowRight:上下左右移动</li>
+          <li>Command+左击: 多项选择|多项取消选择</li>
+        </ul>
       </div>
     </>
   );
