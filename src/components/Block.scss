@@ -27,8 +27,8 @@
   }
   &[isactive="true"] {
     cursor: move;
-    z-index: 1;
     i {
+      z-index: 1;
       background-color: #59c7f9;
       &.block-wrapper-left,
       &.block-wrapper-right {
@@ -49,5 +49,8 @@
   border-radius: 50%;
 }
 .block-square {
+  @extend .block-common;
+}
+.block-group {
   @extend .block-common;
 }

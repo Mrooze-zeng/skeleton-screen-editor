@@ -53,6 +53,7 @@ const RenderInput = function ({ type = "square" }) {
 const SetCanvasAccordingToWidthHeight = function ({
   height = 350,
   width = 450,
+  style = {},
   onUpdateCanvas = function () {},
 }) {
   const _readImage = function (file, imageWidth) {
@@ -86,7 +87,7 @@ const SetCanvasAccordingToWidthHeight = function ({
     }
   };
   return (
-    <Form onSubmit={_handleSubmit}>
+    <Form onSubmit={_handleSubmit} style={style}>
       <h3>设置画布属性:</h3>
       <div>
         <label htmlFor="">画布宽度:</label>

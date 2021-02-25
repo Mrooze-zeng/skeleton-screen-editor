@@ -2,6 +2,9 @@
 .playground {
   position: relative;
   overflow: hidden;
+  canvas {
+    position: relative;
+  }
 }
 
 .button-group {
@@ -10,5 +13,12 @@
     display: block;
     width: 100%;
     margin: 15px auto;
+  }
+}
+.presets-box {
+  > div {
+    display: inline-block;
+    vertical-align: top;
+    margin: 15px;
   }
 }

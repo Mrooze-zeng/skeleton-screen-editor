@@ -46,26 +46,49 @@ const Playground = function ({
     );
   };
   const _handleDrop = function (event) {
-    //todo 图层上不能放置新的图层
     event.preventDefault();
     event.stopPropagation();
     const { X, Y, type } = JSON.parse(event.dataTransfer.getData("block"));
 
     const canvasRect = event.target.getBoundingClientRect();
 
-    const { size, children = [] } = getBlockByType(type)[1];
+    const { size, items = [] } = getBlockByType(type)[1];
 
-    const [block] = blockCreator(
-      {
-        type,
-        isActive: true,
-        left: parseInt(event.clientX - X - canvasRect.x),
-        top: parseInt(event.clientY - Y - canvasRect.y),
-        ...size,
-      },
-      { canvas: event.target }
-    );
-    _setBlocksAndListen([...blocks, block], [block.id]);
+    if (items.length > 0) {
+      let blockItems = [];
+      let blockItemIds = [];
+      items.forEach((item) => {
+        const [block] = blockCreator(
+          {
+            type: item.type,
+            isActive: true,
+            left:
+              parseInt(event.clientX - X - canvasRect.x) +
+              (item?.style?.left || 0),
+            top:
+              parseInt(event.clientY - Y - canvasRect.y) +
+              (item?.style?.top || 0),
+            ...item.size,
+          },
+          { canvas: event.target }
+        );
+        blockItems.push(block);
+        blockItemIds.push(block.id);
+      });
+      _setBlocksAndListen([...blocks, ...blockItems], [...blockItemIds]);
+    } else {
+      const [block] = blockCreator(
+        {
+          type,
+          isActive: true,
+          left: parseInt(event.clientX - X - canvasRect.x),
+          top: parseInt(event.clientY - Y - canvasRect.y),
+          ...size,
+        },
+        { canvas: event.target }
+      );
+      _setBlocksAndListen([...blocks, block], [block.id]);
+    }
   };
 
   const _handleDragOver = function (event) {
@@ -131,10 +154,19 @@ const Playground = function ({
     return blocks.find((block) => block.isActive) || {};
   };
 
-  console.log("blocks:", blocks);
+  console.log("blocks:", blocks, JSON.stringify(blocks));
 
   return (
     <>
+      <div style={{ border: "1px solid lightgray" }}>
+        <h2>可拖拽预设:</h2>
+        <div
+          style={{ padding: 15, backgroundColor: "green" }}
+          className="presets-box"
+        >
+          <BlockLists blocks={presets} draggable={true} />
+        </div>
+      </div>
       <Canvas
         onDrop={_handleDrop}
         onDragOver={_handleDragOver}
@@ -144,12 +176,6 @@ const Playground = function ({
         <RenderBlocks blocks={blocks} onUpdateBlock={_setBlocksAndListen} />
       </Canvas>
       <div style={{ display: "flex", minHeight: 250 }}>
-        <div style={{ border: "1px solid lightgray" }}>
-          <h2>可拖拽预设:</h2>
-          <div style={{ display: "flex", padding: 15 }}>
-            <BlockLists blocks={presets} draggable={true} />
-          </div>
-        </div>
         <div className="button-group">
           <button
             onClick={() => {
@@ -210,7 +236,6 @@ const Playground = function ({
             添加样式块
           </button>
         </div>
-
         <Settings
           blocks={blocks}
           canvasAttr={canvasAttr}

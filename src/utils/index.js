@@ -169,7 +169,7 @@ const blockCreator = function (
   //   drawGuideline(canvas, { top, left, width, height }, side);
   return [
     {
-      id: id || Date.now(),
+      id: id || Date.now() + Math.floor(Math.random() * 10000),
       isActive,
       type: type,
       style: {

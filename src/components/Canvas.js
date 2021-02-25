@@ -25,6 +25,17 @@ const Canvas = function ({
       });
     });
   };
+  const _handleDragOver = function (event) {
+    event.target.style.zIndex = 2;
+    onDragOver(event);
+  };
+  const _handleDrop = function (event) {
+    event.target.style.zIndex = 0;
+    onDrop(event);
+  };
+  const _handleDragLeave = function (event) {
+    event.target.style.zIndex = 0;
+  };
   return (
     <div
       className="playground-canvas"
@@ -33,8 +44,9 @@ const Canvas = function ({
       <canvas
         width={width}
         height={height}
-        onDrop={onDrop}
-        onDragOver={onDragOver}
+        onDrop={_handleDrop}
+        onDragOver={_handleDragOver}
+        onDragLeave={_handleDragLeave}
         ref={canvasRef}
       />
       <div onMouseDown={(event) => onMouseDown(event, canvasRef)}>
