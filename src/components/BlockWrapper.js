@@ -4,7 +4,7 @@ import {
   blockShortCutKeyMap,
   redrawBackground,
 } from "../utils/index";
-import { getBlockByType } from "./BlockLists";
+import { getBlockByType } from "./Block";
 
 const BlockWrapper = function ({
   block = {},
@@ -16,7 +16,7 @@ const BlockWrapper = function ({
   addBlock = function () {},
 }) {
   const { id = "", style = {}, type = "", size = {}, isActive = false } = block;
-  const Block = getBlockByType(type);
+  const [Block] = getBlockByType(type);
   const _handleClick = function (event) {
     event.preventDefault();
     event.stopPropagation();

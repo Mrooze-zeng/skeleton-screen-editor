@@ -57,80 +57,80 @@ const redrawBackground = function (canvas, image, width, height) {
   return ctx;
 };
 
-const _drawGuideline = function (
-  canvas = {},
-  { x = 0, y = 0 },
-  direction = ""
-) {
-  const endpoint = { x: 0, y: 0 };
-  if (direction === "v") {
-    endpoint.y = canvas.height;
-    endpoint.x = x;
-  } else if (direction === "h") {
-    endpoint.y = y;
-    endpoint.x = canvas.width;
-  }
-  const ctx = redrawBackground(canvas);
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(endpoint.x, endpoint.y);
-  ctx.strokeStyle = "#59c7f9";
-  ctx.stroke();
-};
+// const _drawGuideline = function (
+//   canvas = {},
+//   { x = 0, y = 0 },
+//   direction = ""
+// ) {
+//   const endpoint = { x: 0, y: 0 };
+//   if (direction === "v") {
+//     endpoint.y = canvas.height;
+//     endpoint.x = x;
+//   } else if (direction === "h") {
+//     endpoint.y = y;
+//     endpoint.x = canvas.width;
+//   }
+//   const ctx = redrawBackground(canvas);
+//   ctx.beginPath();
+//   ctx.moveTo(x, y);
+//   ctx.lineTo(endpoint.x, endpoint.y);
+//   ctx.strokeStyle = "#59c7f9";
+//   ctx.stroke();
+// };
 
-const drawGuideline = function (
-  canvas = {},
-  { top = 0, left = 0, width = 0, height = 0 },
-  side = ""
-) {
-  //todo 规划线被图层遮盖
-  //todo 图层组移动规划线不正确
-  if (side) {
-    switch (side) {
-      case "top":
-        _drawGuideline(
-          canvas,
-          {
-            y: top,
-            x: 0,
-          },
-          "h"
-        );
-        break;
-      case "right":
-        _drawGuideline(
-          canvas,
-          {
-            y: 0,
-            x: left + width,
-          },
-          "v"
-        );
-        break;
-      case "bottom":
-        _drawGuideline(
-          canvas,
-          {
-            y: top + height,
-            x: 0,
-          },
-          "h"
-        );
-        break;
-      default:
-        //left
-        _drawGuideline(
-          canvas,
-          {
-            y: 0,
-            x: left,
-          },
-          "v"
-        );
-        break;
-    }
-  }
-};
+// const drawGuideline = function (
+//   canvas = {},
+//   { top = 0, left = 0, width = 0, height = 0 },
+//   side = ""
+// ) {
+//   //todo 规划线被图层遮盖
+//   //todo 图层组移动规划线不正确
+//   if (side) {
+//     switch (side) {
+//       case "top":
+//         _drawGuideline(
+//           canvas,
+//           {
+//             y: top,
+//             x: 0,
+//           },
+//           "h"
+//         );
+//         break;
+//       case "right":
+//         _drawGuideline(
+//           canvas,
+//           {
+//             y: 0,
+//             x: left + width,
+//           },
+//           "v"
+//         );
+//         break;
+//       case "bottom":
+//         _drawGuideline(
+//           canvas,
+//           {
+//             y: top + height,
+//             x: 0,
+//           },
+//           "h"
+//         );
+//         break;
+//       default:
+//         //left
+//         _drawGuideline(
+//           canvas,
+//           {
+//             y: 0,
+//             x: left,
+//           },
+//           "v"
+//         );
+//         break;
+//     }
+//   }
+// };
 
 const blockCreator = function (
   {
@@ -143,6 +143,7 @@ const blockCreator = function (
     color = "",
     radius = 0,
     isActive = false,
+    children = [],
   },
   { canvas = {}, extra = 0, side = "" }
 ) {
@@ -165,7 +166,7 @@ const blockCreator = function (
   if (height > canvas.height) {
     height = canvas.height;
   }
-  drawGuideline(canvas, { top, left, width, height }, side);
+  //   drawGuideline(canvas, { top, left, width, height }, side);
   return [
     {
       id: id || Date.now(),
@@ -433,7 +434,7 @@ export {
   throttle,
   blockShortCutKeyMap,
   redrawBackground,
-  drawGuideline,
+  //   drawGuideline,
   calculateBlockGroupHeight,
   blockGroupBoundaryMin,
   blockGroupBoundaryMax,

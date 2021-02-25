@@ -5,7 +5,7 @@ import {
   calculateBlockGroupHeight,
   throttle,
 } from "../utils";
-import BlockLists from "./BlockLists";
+import BlockLists, { getBlockByType, presets } from "./Block";
 import { RenderBlocks } from "./BlockWrapper";
 import Canvas from "./Canvas";
 import "./Playground.scss";
@@ -49,10 +49,11 @@ const Playground = function ({
     //todo 图层上不能放置新的图层
     event.preventDefault();
     event.stopPropagation();
-    const { X, Y, type, size } = JSON.parse(
-      event.dataTransfer.getData("block")
-    );
+    const { X, Y, type } = JSON.parse(event.dataTransfer.getData("block"));
+
     const canvasRect = event.target.getBoundingClientRect();
+
+    const { size, children = [] } = getBlockByType(type)[1];
 
     const [block] = blockCreator(
       {
@@ -146,7 +147,7 @@ const Playground = function ({
         <div style={{ border: "1px solid lightgray" }}>
           <h2>可拖拽预设:</h2>
           <div style={{ display: "flex", padding: 15 }}>
-            <BlockLists />
+            <BlockLists blocks={presets} draggable={true} />
           </div>
         </div>
         <div className="button-group">

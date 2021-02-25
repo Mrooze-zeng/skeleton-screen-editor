@@ -1,34 +1,27 @@
 import { Component } from "react";
-import "./BlockLists.scss";
+import "./Block.scss";
 
-class BaseBlockList extends Component {
+class Base extends Component {
   constructor(props) {
     super(props);
     this._handleDragStart = this._handleDragStart.bind(this);
   }
   _className = "block-square";
   _type = "square";
-  _defaultSize = {
-    width: 100,
-    height: 100,
-    color: "#d3d3d3",
-    radius: 50,
-  };
   _handleDragStart(event) {
     const { x, y } = event.target.getBoundingClientRect();
-    const { size = this._defaultSize } = this.props;
     event.dataTransfer.setData(
       "block",
       JSON.stringify({
         X: event.clientX - x,
         Y: event.clientY - y,
         type: this._type,
-        size: size,
       })
     );
   }
   render() {
-    const { children = "", style = {}, size = this._defaultSize } = this.props;
+    const _preset = getBlockByType(this._type)[1];
+    const { children = "", style = {}, size = _preset.size } = this.props;
     return (
       <div
         type="block"
@@ -48,20 +41,20 @@ class BaseBlockList extends Component {
   }
 }
 
-class Circle extends BaseBlockList {
+class Circle extends Base {
   _className = "block-circle";
   _type = "circle";
 }
 
-class Square extends BaseBlockList {
+class Square extends Base {
   _className = "block-square";
   _type = "square";
 }
 
-const BlockLists = function (props) {
-  const lists = [Circle, Square];
-  return lists.map((List, index) => {
-    return <List key={index} draggable={true} {...props} />;
+const BlockLists = function ({ blocks = [], draggable = false }) {
+  return blocks.map((block, index) => {
+    const [Comp] = getBlockByType(block.type);
+    return <Comp key={index} draggable={draggable} {...block} />;
   });
 };
 
@@ -71,10 +64,28 @@ const getBlockByType = function (type = "square") {
     ["circle", Circle],
   ]);
   if (!blockMap.has(type)) {
-    return null;
+    return [null, null];
   }
-  return blockMap.get(type);
+  return [blockMap.get(type), presets.find((preset) => preset.type === type)];
 };
 
-export { Circle, Square, getBlockByType };
+const presets = [
+  {
+    type: "square",
+    size: {
+      width: 100,
+      height: 100,
+      color: "#d3d3d3",
+    },
+  },
+  {
+    type: "circle",
+    size: {
+      radius: 50,
+      color: "#d3d3d3",
+    },
+  },
+];
+
+export { Circle, Square, getBlockByType, presets };
 export default BlockLists;
