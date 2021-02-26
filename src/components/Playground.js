@@ -58,6 +58,7 @@ const Playground = function ({
       let blockItems = [];
       let blockItemIds = [];
       items.forEach((item) => {
+        console.log(item.size);
         const [block] = blockCreator(
           {
             type: item.type,
@@ -154,7 +155,7 @@ const Playground = function ({
     return blocks.find((block) => block.isActive) || {};
   };
 
-  console.log("blocks:", blocks, JSON.stringify(blocks));
+  //   console.log("blocks:", blocks, JSON.stringify(blocks));
 
   return (
     <>

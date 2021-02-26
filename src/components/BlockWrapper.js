@@ -75,7 +75,7 @@ const BlockWrapper = function ({
   return (
     <Block
       id={id}
-      style={{ ...style, position: "absolute", opacity: 0.9 }}
+      style={{ ...style, position: "absolute", opacity: 0.8 }}
       size={size}
       tabIndex={isActive ? 1 : -1}
       isactive={isActive ? isActive.toString() : undefined}

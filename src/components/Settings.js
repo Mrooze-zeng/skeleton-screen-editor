@@ -139,7 +139,7 @@ const Settings = function ({
 }) {
   const [activeGroup] = blockGroup(blocks, true);
   let currentBlock = {};
-  console.log(activeGroup);
+  //   console.log(activeGroup);
   if (!activeGroup.length) {
     return (
       <SetCanvasAccordingToWidthHeight
@@ -161,8 +161,10 @@ const Settings = function ({
       left = 0,
       top = 0,
       radius = 0,
+      type = "",
     } = event.data;
     onUpdateBlock(currentBlock.id, {
+      type,
       size: {
         color,
         width: parseFloat(width),
@@ -177,6 +179,18 @@ const Settings = function ({
     <Form onSubmit={_handleSubmit}>
       <h3>设置块属性:</h3>
       <RenderInput {...currentBlock} />
+      <div>
+        <label htmlFor="type">类型:</label>
+        <select
+          name="type"
+          id="type"
+          key={currentBlock.type}
+          defaultValue={currentBlock.type}
+        >
+          <option value="circle">circle</option>
+          <option value="square">square</option>
+        </select>
+      </div>
       <div>
         <label htmlFor="color">颜色:</label>
         <input

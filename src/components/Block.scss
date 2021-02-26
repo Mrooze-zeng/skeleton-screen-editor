@@ -1,5 +1,8 @@
 .block-common {
   transition: left top 0.5s ease;
+  &[draggable="true"] {
+    cursor: move;
+  }
   i {
     &.block-wrapper-top,
     &.block-wrapper-bottom {

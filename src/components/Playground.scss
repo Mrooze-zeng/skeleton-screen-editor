@@ -16,6 +16,8 @@
   }
 }
 .presets-box {
+  overflow: scroll;
+  height: 500px;
   > div {
     display: inline-block;
     vertical-align: top;
