@@ -1,15 +1,11 @@
 import { useCallback, useState } from "react";
-import {
-  blockCreator,
-  blockGroupBoundaryMin,
-  calculateBlockGroupHeight,
-  throttle,
-} from "../utils";
+import { blockCreator, throttle } from "../utils";
 import BlockLists, { getBlockByType, presets } from "./Block";
 import { RenderBlocks } from "./BlockWrapper";
+import ButtonGroup from "./ButtonGroup";
 import Canvas from "./Canvas";
+import Note from "./Note";
 import "./Playground.scss";
-import { parseCodeToStyle } from "./RenderResult";
 import Settings from "./Settings";
 
 const _blockChangeThrottle = throttle();
@@ -177,66 +173,13 @@ const Playground = function ({
         <RenderBlocks blocks={blocks} onUpdateBlock={_setBlocksAndListen} />
       </Canvas>
       <div style={{ display: "flex", minHeight: 250 }}>
-        <div className="button-group">
-          <button
-            onClick={() => {
-              onCanvasChange({
-                ...canvasAttr,
-                height: window.innerHeight / 2,
-              });
-              _setBlocksAndListen([]);
-            }}
-          >
-            清空画板
-          </button>
-          <button onClick={() => onBlockChange(blocks)}>渲染</button>
-
-          <button
-            onClick={() => {
-              let code = window.prompt("请填入样式代码") || "";
-              code = code.replace(/\r|\n|\s{2}/g, "");
-              if (code) {
-                let codeBlocks = parseCodeToStyle(code);
-                let blockIds = [];
-                codeBlocks.forEach((block) => {
-                  blockIds.push(block.id);
-                });
-                _setBlocksAndListen([...codeBlocks], blockIds);
-              }
-            }}
-          >
-            导入样式代码
-          </button>
-          <button
-            onClick={() => {
-              let code = window.prompt("请填入样式代码") || "";
-              code = code.replace(/\r|\n|\s{2}/g, "");
-              if (code) {
-                let codeBlocks = parseCodeToStyle(code);
-                let blockIds = [];
-                codeBlocks.forEach((block) => {
-                  blockIds.push(block.id);
-                });
-                const extraHeight = calculateBlockGroupHeight(blocks, 15);
-                const min = blockGroupBoundaryMin(codeBlocks, "top", true)[1];
-                codeBlocks = codeBlocks.map((block) => {
-                  block.style.top += extraHeight - min;
-                  return block;
-                });
-                onCanvasChange({
-                  ...canvasAttr,
-                  height: calculateBlockGroupHeight(
-                    [...blocks, ...codeBlocks],
-                    15
-                  ),
-                });
-                _setBlocksAndListen([...blocks, ...codeBlocks], blockIds);
-              }
-            }}
-          >
-            添加样式块
-          </button>
-        </div>
+        <ButtonGroup
+          onCanvasChange={onCanvasChange}
+          onBlockChange={onBlockChange}
+          setBlocks={_setBlocksAndListen}
+          blocks={blocks}
+          canvasAttr={canvasAttr}
+        />
         <Settings
           blocks={blocks}
           canvasAttr={canvasAttr}
@@ -248,13 +191,7 @@ const Playground = function ({
             [onCanvasChange]
           )}
         />
-        <ul>
-          <h3>快捷键:</h3>
-          <li>Delete: 删除</li>
-          <li>Command+V: 复制选中的块</li>
-          <li>ArrowUp|ArrowDown|ArrowLeft|ArrowRight:上下左右移动</li>
-          <li>Command+左击: 多项选择|多项取消选择</li>
-        </ul>
+        <Note />
       </div>
     </>
   );
