@@ -166,9 +166,12 @@ const Settings = function ({
       radius =
         radius ||
         Math.min(currentBlock.size.width, currentBlock.size.height) / 2;
+      width = radius * 2;
+      height = radius * 2;
     } else if (type === "square") {
       width = width || radius * 2;
       height = height || radius * 2;
+      radius = 0;
     }
     const [newBlock] = blockCreator(
       {

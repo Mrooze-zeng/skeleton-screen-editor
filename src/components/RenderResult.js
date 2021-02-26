@@ -1,4 +1,4 @@
-import { serializeWidthAndHeightOnStyle } from "../utils/index";
+import { generateId, serializeWidthAndHeightOnStyle } from "../utils/index";
 import Canvas from "./Canvas";
 import "./RenderResult.scss";
 
@@ -39,7 +39,7 @@ const parseCodeToStyle = function (code = "") {
     const [size, style] = _getSize(codeGroup[i]);
     const type = _getType(codeGroup[i]);
     const data = {
-      id: Date.now() + i + 1,
+      id: generateId(),
       type,
       size,
       style,

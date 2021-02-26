@@ -110,7 +110,7 @@ const Playground = function ({
   const _handleMouseDown = function (event, canvasRef) {
     event.stopPropagation();
     event.preventDefault();
-    const currentBlock = _getCurrentBlock(blocks);
+    const currentBlock = _getCurrentBlock(blocks, event.target.id);
     if (
       !currentBlock.id ||
       (currentBlock.id && event.target.id !== String(currentBlock.id))
@@ -147,8 +147,8 @@ const Playground = function ({
     document.addEventListener("mouseup", _up);
   };
 
-  const _getCurrentBlock = function (blocks = []) {
-    return blocks.find((block) => block.isActive) || {};
+  const _getCurrentBlock = function (blocks = [], id = "") {
+    return blocks.find((block) => block.id === Number(id)) || {};
   };
 
   //   console.log("blocks:", blocks, JSON.stringify(blocks));
@@ -168,9 +168,11 @@ const Playground = function ({
         onDrop={_handleDrop}
         onDragOver={_handleDragOver}
         onMouseDown={_handleMouseDown}
+        blocks={blocks}
+        onUpdateBlock={_setBlocksAndListen}
         {...canvasAttr}
       >
-        <RenderBlocks blocks={blocks} onUpdateBlock={_setBlocksAndListen} />
+        <RenderBlocks onUpdateBlock={_setBlocksAndListen} />
       </Canvas>
       <div style={{ display: "flex", minHeight: 250 }}>
         <ButtonGroup

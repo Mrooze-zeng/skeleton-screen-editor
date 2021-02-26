@@ -41,8 +41,45 @@ const drawImage = function (canvas, image) {
   ctx.drawImage(image, 0, 0, image.width, image.height);
 };
 
-const serializeWidthAndHeightOnStyle = function (style) {
-  return { ...style, width: style.width + "px", height: style.height + "px" };
+const canvasDrawActiveLine = function (
+  canvas,
+  start = { x: 0, y: 0 },
+  end = { x: 0, y: 0 }
+) {
+  const ctx = canvas.getContext("2d");
+  redrawBackground(canvas);
+  ctx.beginPath();
+  ctx.strokeStyle = "#59c7f9";
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end.x, start.y);
+  ctx.lineTo(end.x, end.y);
+  ctx.lineTo(start.x, end.y);
+  ctx.closePath();
+  ctx.stroke();
+};
+
+const blocksInCanvasActiveArea = function (
+  blocks = [],
+  boundary = { left: 0, top: 0, right: 0, bottom: 0 }
+) {
+  const activeBlockIds = [];
+  blocks.forEach((block) => {
+    if (
+      !(
+        block.style.left > boundary.right ||
+        boundary.left >
+          block.style.left + (block.size.width || block.size.radius * 2)
+      ) &&
+      !(
+        block.style.top > boundary.bottom ||
+        boundary.top >
+          block.style.top + (block.size.height || block.size.radius * 2)
+      )
+    ) {
+      activeBlockIds.push(block.id);
+    }
+  });
+  return activeBlockIds;
 };
 
 const redrawBackground = function (canvas, image, width, height) {
@@ -57,80 +94,9 @@ const redrawBackground = function (canvas, image, width, height) {
   return ctx;
 };
 
-// const _drawGuideline = function (
-//   canvas = {},
-//   { x = 0, y = 0 },
-//   direction = ""
-// ) {
-//   const endpoint = { x: 0, y: 0 };
-//   if (direction === "v") {
-//     endpoint.y = canvas.height;
-//     endpoint.x = x;
-//   } else if (direction === "h") {
-//     endpoint.y = y;
-//     endpoint.x = canvas.width;
-//   }
-//   const ctx = redrawBackground(canvas);
-//   ctx.beginPath();
-//   ctx.moveTo(x, y);
-//   ctx.lineTo(endpoint.x, endpoint.y);
-//   ctx.strokeStyle = "#59c7f9";
-//   ctx.stroke();
-// };
-
-// const drawGuideline = function (
-//   canvas = {},
-//   { top = 0, left = 0, width = 0, height = 0 },
-//   side = ""
-// ) {
-//   //todo 规划线被图层遮盖
-//   //todo 图层组移动规划线不正确
-//   if (side) {
-//     switch (side) {
-//       case "top":
-//         _drawGuideline(
-//           canvas,
-//           {
-//             y: top,
-//             x: 0,
-//           },
-//           "h"
-//         );
-//         break;
-//       case "right":
-//         _drawGuideline(
-//           canvas,
-//           {
-//             y: 0,
-//             x: left + width,
-//           },
-//           "v"
-//         );
-//         break;
-//       case "bottom":
-//         _drawGuideline(
-//           canvas,
-//           {
-//             y: top + height,
-//             x: 0,
-//           },
-//           "h"
-//         );
-//         break;
-//       default:
-//         //left
-//         _drawGuideline(
-//           canvas,
-//           {
-//             y: 0,
-//             x: left,
-//           },
-//           "v"
-//         );
-//         break;
-//     }
-//   }
-// };
+const serializeWidthAndHeightOnStyle = function (style) {
+  return { ...style, width: style.width + "px", height: style.height + "px" };
+};
 
 const blockCreator = function (
   {
@@ -168,7 +134,7 @@ const blockCreator = function (
   }
   return [
     {
-      id: id || Date.now() + Math.floor(Math.random() * 10000),
+      id: id || generateId(),
       isActive,
       type: type,
       style: {
@@ -280,7 +246,7 @@ const blockShortCutKeyMap = function (
               {
                 type,
                 isActive: true,
-                id: Date.now() + i,
+                id: generateId(),
                 left: style.left + 10,
                 top: style.top + 10,
                 ...size,
@@ -417,6 +383,13 @@ const blockShortCutKeyMap = function (
   };
 };
 
+const generateId = (function () {
+  let id = 0;
+  return function () {
+    return id++;
+  };
+})();
+
 const calculateBlockGroupHeight = function (blocks = [], margin = 0) {
   let _blocksheights = [0];
   blocks.forEach((block) => {
@@ -428,14 +401,16 @@ const calculateBlockGroupHeight = function (blocks = [], margin = 0) {
 export {
   drawGrid,
   drawImage,
+  canvasDrawActiveLine,
+  blocksInCanvasActiveArea,
   serializeWidthAndHeightOnStyle,
   blockCreator,
   throttle,
   blockShortCutKeyMap,
   redrawBackground,
-  //   drawGuideline,
   calculateBlockGroupHeight,
   blockGroupBoundaryMin,
   blockGroupBoundaryMax,
   blockGroup,
+  generateId,
 };
