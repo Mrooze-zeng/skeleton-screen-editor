@@ -27,12 +27,12 @@ const parseCodeToStyle = function (code = "") {
     const [left = "", top = ""] = position.replace(",", "").trim().split(" ");
     return [
       {
-        width: parseFloat(width),
-        height: parseFloat(height),
-        radius: parseFloat(width) / 2,
+        width: parseInt(width),
+        height: parseInt(height),
+        radius: parseInt(width) / 2,
         color: color,
       },
-      { left: parseFloat(left), top: parseFloat(top) },
+      { left: parseInt(left), top: parseInt(top) },
     ];
   };
   for (let i = 0; i < codeGroup.length; i++) {

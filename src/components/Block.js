@@ -30,8 +30,8 @@ class Base extends Component {
         {...this.props}
         style={{
           ...style,
-          width: parseFloat(size.width || size.radius * 2),
-          height: parseFloat(size.height || size.radius * 2),
+          width: parseInt(size.width || size.radius * 2),
+          height: parseInt(size.height || size.radius * 2),
           backgroundColor: size.color,
         }}
       >
@@ -77,8 +77,8 @@ class Group extends Base {
         {...this.props}
         style={{
           ...style,
-          width: parseFloat(size.width || size.radius * 2),
-          height: parseFloat(size.height || size.radius * 2),
+          width: parseInt(size.width || size.radius * 2),
+          height: parseInt(size.height || size.radius * 2),
           backgroundColor: size.color,
           position: "relative",
         }}

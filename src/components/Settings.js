@@ -13,7 +13,7 @@ const RenderInput = function ({ type = "square" }) {
               id="height"
               type="number"
               name="height"
-              defaultValue={parseFloat(height)}
+              defaultValue={parseInt(height)}
               placeholder="请输入高度"
             />
           </div>
@@ -23,7 +23,7 @@ const RenderInput = function ({ type = "square" }) {
               type="number"
               id="width"
               name="width"
-              defaultValue={parseFloat(width)}
+              defaultValue={parseInt(width)}
               placeholder="请输入宽度"
             />
           </div>
@@ -39,7 +39,7 @@ const RenderInput = function ({ type = "square" }) {
             type="number"
             id="radius"
             name="radius"
-            defaultValue={parseFloat(radius)}
+            defaultValue={parseInt(radius)}
           />
         </div>
       ),
@@ -79,7 +79,7 @@ const SetCanvasAccordingToWidthHeight = function ({
     try {
       const image = await _readImage(
         event.data.file,
-        parseFloat(event.data.imageWidth)
+        parseInt(event.data.imageWidth)
       );
       onUpdateCanvas({ ...event.data, image });
     } catch (e) {
@@ -95,7 +95,7 @@ const SetCanvasAccordingToWidthHeight = function ({
           type="number"
           id="width"
           name="width"
-          defaultValue={parseFloat(width)}
+          defaultValue={parseInt(width)}
           placeholder="请输入画布宽度"
         />
       </div>
@@ -105,7 +105,7 @@ const SetCanvasAccordingToWidthHeight = function ({
           type="number"
           id="height"
           name="height"
-          defaultValue={parseFloat(height)}
+          defaultValue={parseInt(height)}
           placeholder="请输入画布高度"
         />
       </div>
@@ -120,7 +120,7 @@ const SetCanvasAccordingToWidthHeight = function ({
           type="number"
           name="imageWidth"
           id="imageWidth"
-          defaultValue={parseFloat(width)}
+          defaultValue={parseInt(width)}
         />
       </div>
       <div>
@@ -139,7 +139,6 @@ const Settings = function ({
 }) {
   const [activeGroup] = blockGroup(blocks, true);
   let currentBlock = {};
-  //   console.log(activeGroup);
   if (!activeGroup.length) {
     return (
       <SetCanvasAccordingToWidthHeight
@@ -167,11 +166,11 @@ const Settings = function ({
       type,
       size: {
         color,
-        width: parseFloat(width),
-        height: parseFloat(height),
-        radius: parseFloat(radius),
+        width: parseInt(width || radius * 2),
+        height: parseInt(height || radius * 2),
+        radius: parseInt(radius || width / 2),
       },
-      style: { left: parseFloat(left), top: parseFloat(top) },
+      style: { left: parseInt(left), top: parseInt(top) },
     });
   };
 
