@@ -72,12 +72,14 @@ const Canvas = function ({
     const _up = (e) => {
       event.target.removeEventListener("mousemove", _move);
       event.target.removeEventListener("mouseup", _up);
+      event.target.removeEventListener("mouseout", _up);
       event.target.style.zIndex = 0;
       redrawBackground(event.target);
       onUpdateBlock(blocks, activeBlockIds);
     };
     event.target.addEventListener("mousemove", _move);
     event.target.addEventListener("mouseup", _up);
+    event.target.addEventListener("mouseout", _up);
   };
   return (
     <div

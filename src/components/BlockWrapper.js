@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  blockCreator,
-  blockShortCutKeyMap,
-  redrawBackground,
-} from "../utils/index";
+import { blockCreator, blockShortCutKeyMap } from "../utils/index";
 import { getBlockByType } from "./Block";
 
 const BlockWrapper = function ({
@@ -43,29 +39,11 @@ const BlockWrapper = function ({
     }
   };
 
-  const _handleKeyUp = function (event) {
-    if (
-      (isActive &&
-        (event.target.getAttribute("type") === "block" ||
-          event.target === document.body) &&
-        (event.code === "ArrowUp" ||
-          event.code === "ArrowRight" ||
-          event.code === "ArrowDown")) ||
-      event.code === "ArrowLeft"
-    ) {
-      redrawBackground(canvas);
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  };
-
   useEffect(() => {
     if (isActive) {
       window.addEventListener("keydown", _handleKeyDown, false);
-      window.addEventListener("keyup", _handleKeyUp, false);
       return () => {
         window.removeEventListener("keydown", _handleKeyDown, false);
-        window.removeEventListener("keyup", _handleKeyUp, false);
       };
     }
   });
