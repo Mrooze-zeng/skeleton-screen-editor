@@ -1,4 +1,4 @@
-import { blockGroup } from "../utils";
+import { blockCreator, blockGroup } from "../utils";
 import Form from "./Form";
 
 const RenderInput = function ({ type = "square" }) {
@@ -153,7 +153,7 @@ const Settings = function ({
   }
 
   const _handleSubmit = function (event) {
-    const {
+    let {
       color = "",
       width = 0,
       height = 0,
@@ -162,16 +162,28 @@ const Settings = function ({
       radius = 0,
       type = "",
     } = event.data;
-    onUpdateBlock(currentBlock.id, {
-      type,
-      size: {
+    if (type === "circle") {
+      radius =
+        radius ||
+        Math.min(currentBlock.size.width, currentBlock.size.height) / 2;
+    } else if (type === "square") {
+      width = width || radius * 2;
+      height = height || radius * 2;
+    }
+    const [newBlock] = blockCreator(
+      {
+        type,
         color,
-        width: parseInt(width || radius * 2),
-        height: parseInt(height || radius * 2),
-        radius: parseInt(radius || width / 2),
+        width: parseInt(width),
+        height: parseInt(height),
+        radius: parseInt(radius),
+        left: parseInt(left),
+        top: parseInt(top),
+        id: currentBlock.id,
       },
-      style: { left: parseInt(left), top: parseInt(top) },
-    });
+      { canvas: canvasAttr }
+    );
+    onUpdateBlock(currentBlock.id, newBlock);
   };
 
   return (

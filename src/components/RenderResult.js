@@ -103,6 +103,10 @@ const _generateStyles = function (blocks = [], width = 450, height = 350) {
 
 const RenderResult = function ({ blocks = [], width = 450, height = 350 }) {
   const [styles, code] = _generateStyles(blocks, width, height);
+  const _selectText = function (event) {
+    event.target.select();
+    document.execCommand("copy");
+  };
   return (
     <>
       <Canvas width={width} height={height}>
@@ -112,6 +116,7 @@ const RenderResult = function ({ blocks = [], width = 450, height = 350 }) {
         value={code}
         rows={10}
         cols={20}
+        onFocus={_selectText}
         readOnly
         style={{ width: "100%" }}
       ></textarea>

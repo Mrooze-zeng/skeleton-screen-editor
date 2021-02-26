@@ -145,7 +145,7 @@ const blockCreator = function (
     isActive = false,
     children = [],
   },
-  { canvas = {}, extra = 0, side = "" }
+  { canvas = {}, extra = 0 }
 ) {
   // calculate boundary
   if (left + width > canvas.width) {
@@ -166,7 +166,6 @@ const blockCreator = function (
   if (height > canvas.height) {
     height = canvas.height;
   }
-  //   drawGuideline(canvas, { top, left, width, height }, side);
   return [
     {
       id: id || Date.now() + Math.floor(Math.random() * 10000),
