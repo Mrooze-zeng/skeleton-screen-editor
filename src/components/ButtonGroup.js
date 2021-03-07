@@ -25,7 +25,7 @@ const ButtonGroup = function ({
 
       <button
         onClick={() => {
-          let code = window.prompt("请填入样式代码") || "";
+          let code = window.prompt("请填入样式代码 (ps:有格式限制)") || "";
           code = code.replace(/\r|\n|\s{2}/g, "");
           if (code) {
             let codeBlocks = setBlocks(code);
@@ -41,7 +41,7 @@ const ButtonGroup = function ({
       </button>
       <button
         onClick={() => {
-          let code = window.prompt("请填入样式代码") || "";
+          let code = window.prompt("请填入样式代码 (ps:有格式限制)") || "";
           code = code.replace(/\r|\n|\s{2}/g, "");
           if (code) {
             let codeBlocks = parseCodeToStyle(code);

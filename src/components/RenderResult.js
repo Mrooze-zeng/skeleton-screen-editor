@@ -107,19 +107,135 @@ const RenderResult = function ({ blocks = [], width = 450, height = 350 }) {
     event.target.select();
     document.execCommand("copy");
   };
+  const formatCode = function (code) {
+    return `
+    @mixin skeleton-screen-bg-creator($images, $width, $height) {
+        $imagesArr: ();
+        $sizeArr: ();
+        $positionArr: ();
+    
+        @for $i from 1 through length($images) {
+            $imagesArr: append(
+                $imagesArr,
+                nth(nth($images, $i), 1),
+                $separator: comma
+            );
+            $sizeArr: append($sizeArr, nth(nth($images, $i), 2), $separator: comma);
+            $positionArr: append(
+                $positionArr,
+                nth(nth($images, $i), 3),
+                $separator: comma
+            );
+        }
+    
+        background: {
+            image: $imagesArr;
+            size: $sizeArr;
+            position: $positionArr;
+        }
+        background-repeat: no-repeat;
+        overflow: hidden;
+        width: $width;
+        height: $height;
+        &:before {
+            content: "";
+            width: $width;
+            height: $height;
+            display: inline-block;
+            position: relative;
+            top: 0;
+            left: -100%;
+            background-image: linear-gradient(
+                100deg,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0) 80%
+            );
+            animation: shine 1s infinite;
+        }
+    
+        @keyframes shine {
+            to {
+                left: 100%;
+            }
+        }
+    }
+    $demo:${code}
+    div{
+        &:empty {
+            @include skeleton-screen-bg-creator(
+                $demo,
+                100%,
+                100vh
+            );
+        }
+    }
+    `;
+  };
+  const formatCodeCSS = function (styles) {
+    return `
+    div:empty{
+        background-image: ${styles.backgroundImage};
+        background-position: ${styles.backgroundPosition};
+        background-size: ${styles.backgroundSize};
+        background-repeat: no-repeat;
+        width:100vw;
+        height:100vh;
+        overflow:hidden;
+        position:relative;
+    }
+    div:before {
+        content: "";
+        width: 100vw;
+        height: 100vh;
+        display: inline-block;
+        position: relative;
+        top: 0;
+        left: -100%;
+        background-image: linear-gradient(
+            100deg,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0) 80%
+        );
+        animation: shine 1s infinite;
+    }
+    @keyframes shine {
+        to {
+            left: 100%;
+        }
+    }
+    `;
+  };
   return (
     <>
       <Canvas width={width} height={height}>
         <div className="result-render" style={styles}></div>
       </Canvas>
-      <textarea
-        value={code}
-        rows={10}
-        cols={20}
-        onFocus={_selectText}
-        readOnly
-        style={{ width: "100%" }}
-      ></textarea>
+      <div>
+        <label htmlFor="sass">Sass:</label>
+        <textarea
+          name="sass"
+          value={formatCode(code)}
+          rows={10}
+          cols={20}
+          onFocus={_selectText}
+          readOnly
+          style={{ width: "100%" }}
+        ></textarea>
+      </div>
+      <div>
+        <label htmlFor="css">CSS:</label>
+        <textarea
+          name="sass"
+          value={formatCodeCSS(styles)}
+          rows={10}
+          cols={20}
+          onFocus={_selectText}
+          readOnly
+          style={{ width: "100%" }}
+        ></textarea>
+      </div>
     </>
   );
 };
